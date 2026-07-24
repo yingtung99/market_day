@@ -28,11 +28,11 @@ export interface VendorStallInfo {
   coverImageUrl: string | null;
   brandSummary: string;
   brandDescription: string;
-  categories: VendorStallCategory[];
+  category: VendorStallCategory | null;
   products: VendorStallProduct[];
 }
 
-export type VendorStallSaveRequest = Omit<VendorStallInfo, 'categories'> & {
+export type VendorStallSaveRequest = Omit<VendorStallInfo, 'category'> & {
   categoryId: number;
 };
 

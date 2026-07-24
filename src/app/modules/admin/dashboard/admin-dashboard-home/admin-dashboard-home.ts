@@ -154,13 +154,12 @@ export class AdminDashboardHome extends AdminDashboardNotification implements On
         iconColor: 'orange',
       },
       {
-        icon: 'bi-exclamation-circle',
-        count: data.eventPayment,
+        icon: 'bi-exclamation-triangle',
+        count: data.systemWarning,
         unit: '筆',
-        label: '通知款項結清',
-        path: '/admin/dash-board/activity',
-        queryParams: { status: ActivityStatus.payment },
-        iconColor: 'orange',
+        label: '異常提醒',
+        path: '/admin/dash-board/notification',
+        iconColor: 'red',
       },
     ];
 

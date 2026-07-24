@@ -82,12 +82,6 @@ export class AdminApiService {
     return this.httpService.post<EventStatusChangeDto>(`api/admin/events/${id}/unpublish-confirm`, note);
   }
 
-  /** 通知主辦方已完成款項交付 */
-  notifyEventPaymentCompleted(id: number):
-  Observable<ApiResult<EventStatusChangeDto>> {
-    return this.httpService.post<EventStatusChangeDto>(`api/admin/events/${id}/payment`, null);
-  }
-
   searchUsers(
     request: AdminUserSearchRequest,
     options: HttpRequestOptions = {},

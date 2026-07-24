@@ -9,7 +9,8 @@
 測試計畫分開維護：
 
 - [帳號 E2E 測試計畫](./auth-account-e2e-test-plan.md)：攤主、主辦方、管理員帳號功能。
-- 全專案活動主流程測試計畫：待建立，負責跨角色的活動建立、審核、報名、付款與選位。
+- [活動主流程 E2E 測試計畫](./event-main-flow-e2e-test-plan.md)：跨角色的活動建立、審核、報名、付款與選位。
+- [管理員後台 E2E 測試計畫](./admin-management-e2e-test-plan.md)：管理員專屬的補件、下架審核、使用者管理與操作紀錄。
 
 ## 2. 目前環境
 
@@ -61,11 +62,16 @@ E2E_ADMIN_EMAIL=管理員測試信箱
 E2E_ADMIN_PASSWORD=管理員測試密碼
 PW_SLOW_MO=1500
 PW_UI_SLOW_MO=300
+E2E_TARGET_ORGANIZER_EMAIL=目標主辦方測試信箱
+E2E_TARGET_ORGANIZER_PASSWORD=目標主辦方測試密碼
+E2E_TARGET_VENDOR_EMAIL=目標攤主測試信箱
+E2E_TARGET_VENDOR_PASSWORD=目標攤主測試密碼
 ```
 
 規則：
 
 - 必須使用專用測試帳號，不得使用正式或個人帳號。
+- `E2E_TARGET_ORGANIZER_*`／`E2E_TARGET_VENDOR_*` 是管理員後台測試專用的停用/恢復帳號目標，不可與 `E2E_ORGANIZER_EMAIL`／`E2E_VENDOR_EMAIL` 共用同一個帳號。
 - `.env.e2e.local` 不可提交 Git。
 - 沒有帳密的角色登入與登出案例會標示為 skipped。
 

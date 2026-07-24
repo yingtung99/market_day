@@ -58,7 +58,7 @@
 
           <tbody>
             @for (item of pagedRecords; track item.id) {
-              <tr [appTableRowLink]="['/vendor/dash-board/application-record/detail', item.applicationNo]">
+              <tr [appTableRowLink]="['/vendor/dash-board/application-record/detail', item.id]">
                 <td>
                   <div class="event-info">
                     @if (item.image) {

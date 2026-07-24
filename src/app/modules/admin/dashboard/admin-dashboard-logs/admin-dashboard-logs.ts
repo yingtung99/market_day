@@ -46,7 +46,6 @@ export class AdminDashboardLogs implements AfterViewInit {
     OperationType.requestRevision,
     OperationType.mapBuildCompleted,
     OperationType.eventUnpublishReview,
-    OperationType.notifyEventPayment,
     OperationType.accountRestored,
     OperationType.accountDisabled,
     OperationType.systemSetting,

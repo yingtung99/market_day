@@ -310,6 +310,14 @@
                 <td>{{ item.unit }}</td>
                 <td>NT$0</td>
               </tr>
+            } @empty {
+              <tr class="resource-empty-row" aria-label="無資料">
+                <td>&nbsp;</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
             }
           </tbody>
         </table>
@@ -337,6 +345,14 @@
                 <td>{{ item.quantity }}</td>
                 <td>{{ item.price }}</td>
                 <td>{{ item.subtotal }}</td>
+              </tr>
+            } @empty {
+              <tr class="resource-empty-row" aria-label="無資料">
+                <td>&nbsp;</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
               </tr>
             }
           </tbody>
@@ -366,6 +382,13 @@
                 <td>{{ item.price }}</td>
                 <td>{{ item.subtotal }}</td>
               </tr>
+            } @empty {
+              <tr class="resource-empty-row" aria-label="無資料">
+                <td>&nbsp;</td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
             }
           </tbody>
         </table>
@@ -391,6 +414,13 @@
                 <td>{{ item.wattage }}</td>
                 <td>{{ item.price }}</td>
                 <td>{{ item.subtotal }}</td>
+              </tr>
+            } @empty {
+              <tr class="resource-empty-row" aria-label="無資料">
+                <td>&nbsp;</td>
+                <td></td>
+                <td></td>
+                <td></td>
               </tr>
             }
           </tbody>

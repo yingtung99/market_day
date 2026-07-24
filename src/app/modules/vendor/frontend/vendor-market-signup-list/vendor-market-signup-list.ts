@@ -77,8 +77,13 @@ export class VendorMarketSignupList implements OnInit {
       .subscribe({
         next: (response) => {
           const marketPage = response.data.markets;
-          this.markets = marketPage.items.map((item) => this.toMarketCard(item));
-          this.totalItems = marketPage.totalItems;
+          const availableMarkets = marketPage.items.filter(
+            (item) => !this.isRegistrationClosed(item),
+          );
+          const closedMarketCount = marketPage.items.length - availableMarkets.length;
+
+          this.markets = availableMarkets.map((item) => this.toMarketCard(item));
+          this.totalItems = Math.max(0, marketPage.totalItems - closedMarketCount);
           this.isLoading = false;
         },
         error: () => {
@@ -88,6 +93,16 @@ export class VendorMarketSignupList implements OnInit {
           this.isLoading = false;
         },
       });
+  }
+
+  /** 報名截止時間已到的活動不應出現在可報名市集列表。 */
+  private isRegistrationClosed(item: VendorMarketSearchItem): boolean {
+    if (!item.registrationEndAt) return false;
+
+    const registrationEndAt = new Date(item.registrationEndAt);
+    if (Number.isNaN(registrationEndAt.getTime())) return false;
+
+    return registrationEndAt.getTime() <= Date.now();
   }
 
   /** 將搜尋 API DTO 轉成共用的市集卡片模型。 */

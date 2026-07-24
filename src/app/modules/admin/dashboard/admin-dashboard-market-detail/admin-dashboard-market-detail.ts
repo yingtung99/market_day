@@ -521,24 +521,6 @@ export class AdminDashboardMarketDetail implements OnInit {
     );
   }
 
-    onPaymentHandler = async (): Promise<void> => {
-    const confirmed = await this.alert.confirm(
-      '通知主辦方已完成款項交付',
-      '確定通知主辦方已完成款項交付嗎?<br />送出後主辦方將收到活動款項交付通知',
-      '確認送出',
-      '取消',
-    );
-
-    if (!confirmed || !this.eventId) return;
-
-    await this.runEventAction(
-      this.adminApiService.notifyEventPaymentCompleted(this.eventId),
-      '款項交付通知已送出',
-      '款項交付通知成功送出。<br />待主辦方確認後，該活動將正式結案。',
-      '款項交付通知失敗',
-    );
-  };
-
   downloadImg = async (): Promise<void> => {
     const imageUrl = this.detail?.boothLayoutImage;
     if (!imageUrl) {

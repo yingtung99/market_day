@@ -4,7 +4,10 @@ import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { VendorDashboardService } from '../../../../core/Vendor/dashboardApi/vendor-dashboard.service';
 import { isApiSuccessStatus } from '../../../../models/interface/shared/ApiResult';
-import { VendorDashboardNotification } from '../../../../models/interface/vendor/VendorDashboardInit';
+import {
+  VendorDashboardInit,
+  VendorDashboardNotification,
+} from '../../../../models/interface/vendor/VendorDashboardInit';
 import { DashboardHomeTodoCard } from '../../../shared/dashboard/dashboard-home-todo-card/dashboard-home-todo-card';
 import {
   DashboardNotification,
@@ -62,47 +65,71 @@ export class VendorDashboardHome implements OnInit {
         this.hasRecords = !dashboard.needsProfile;
         this.guideMessage = dashboard.guideMessage ?? '';
         this.dashboardVendorName = dashboard.name?.trim() ?? '';
-        this.todoItems = [
-          {
-            icon: 'bi-clipboard-check',
-            count: dashboard.pendingReviewCount,
-            unit: '筆',
-            label: '待審核報名',
-            path: '/vendor/dash-board/application-record',
-            iconColor: 'orange',
+
+        if (dashboard.needsProfile) {
+          return;
+        }
+
+        this.hasRecords = null;
+        this.vendorDashboardService.searchVendorApplications({ page: 1, pageSize: 1 }).subscribe({
+          next: (applicationResponse) => {
+            if (!isApiSuccessStatus(applicationResponse.statusCode)) {
+              this.loadError = applicationResponse.message || '報名紀錄數量載入失敗，請稍後再試。';
+              return;
+            }
+
+            this.hasRecords = true;
+            this.setDashboardContent(dashboard, applicationResponse.data.totalCount);
           },
-          {
-            icon: 'bi-wallet2',
-            count: dashboard.pendingPaymentCount,
-            unit: '筆',
-            label: '待付款報名',
-            path: '/vendor/dash-board/application-record',
-            iconColor: 'orange',
+          error: () => {
+            this.loadError = '報名紀錄數量載入失敗，請重新整理後再試。';
           },
-          {
-            icon: 'bi-shop',
-            count: dashboard.pendingStallSelectionCount,
-            unit: '筆',
-            label: '待選擇攤位',
-            path: '/vendor/dash-board/application-record',
-            iconColor: 'blue',
-          },
-          {
-            icon: 'bi-arrow-counterclockwise',
-            count: dashboard.pendingRefundCount ?? 0,
-            unit: '筆',
-            label: '退款處理中',
-            path: '/vendor/dash-board/application-record',
-            iconColor: 'purple',
-          },
-        ];
-        this.notifications = (dashboard.notifications ?? [])
-          .map((item) => this.toNotificationItem(item));
+        });
       },
       error: () => {
         this.loadError = '首頁資料載入失敗，請重新整理後再試。';
       },
     });
+  }
+
+  private setDashboardContent(dashboard: VendorDashboardInit, applicationCount: number): void {
+    this.todoItems = [
+      {
+        icon: 'bi-clipboard-check',
+        count: dashboard.pendingReviewCount,
+        unit: '筆',
+        label: '待審核報名',
+        path: '/vendor/dash-board/application-record',
+        iconColor: 'orange',
+      },
+      {
+        icon: 'bi-wallet2',
+        count: dashboard.pendingPaymentCount,
+        unit: '筆',
+        label: '待付款報名',
+        path: '/vendor/dash-board/application-record',
+        iconColor: 'orange',
+      },
+      {
+        icon: 'bi-shop',
+        count: dashboard.pendingStallSelectionCount,
+        unit: '筆',
+        label: '待選擇攤位',
+        path: '/vendor/dash-board/application-record',
+        iconColor: 'blue',
+      },
+      {
+        icon: 'bi-journal-check',
+        count: applicationCount,
+        unit: '筆',
+        label: '我的報名紀錄',
+        path: '/vendor/dash-board/application-record',
+        iconColor: 'purple',
+      },
+    ];
+    this.notifications = (dashboard.notifications ?? []).map((item) =>
+      this.toNotificationItem(item),
+    );
   }
 
   get vendorName(): string {

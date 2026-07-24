@@ -56,6 +56,8 @@ export class VendorBoothSelection implements OnInit {
   private currentMapStalls = new Map<string, VendorStallMapItem>();
   private persistedSelections = new Map<string, VendorSelectedStall>();
   private mapRequestSequence = 0;
+  private applicationDates: string[] = [];
+  private registrationPeriodText = '';
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -83,6 +85,18 @@ export class VendorBoothSelection implements OnInit {
           this.handleActivityLoadFailure(response.message);
           return;
         }
+
+        this.applicationDates = this.extractRegistrationDates(
+          response.data.applicationdetail?.registrationPeriods,
+        );
+        if (this.applicationDates.length === 0) {
+          this.applicationDates = this.uniqueDates(
+            response.data.stall?.map((stall) => stall.applyDate) ?? [],
+          );
+        }
+        this.registrationPeriodText = this.formatRegistrationPeriods(
+          response.data.applicationdetail?.registrationPeriods,
+        );
 
         this.loadActivity(response.data.event.eventId);
       },
@@ -230,7 +244,6 @@ export class VendorBoothSelection implements OnInit {
 
   private applyActivity(activity: VendorMarketDetail): void {
     this.activityTitle = activity.eventTitle;
-    this.activityDateText = this.formatActivityDateTime(activity.startAt, activity.endAt);
     this.activityAddress = activity.locationName || activity.address;
     this.boothTotal = activity.dailyAvailability[0]?.totalStalls ?? activity.maxBooths;
 
@@ -241,7 +254,11 @@ export class VendorBoothSelection implements OnInit {
       selectedTimes[index] || null,
     ]));
 
-    const activityDates = activity.dailyAvailability.map((item) => item.applyDate).filter(Boolean);
+    const activityDates = this.applicationDates.length > 0
+      ? this.applicationDates
+      : this.uniqueDates(activity.dailyAvailability.map((item) => item.applyDate));
+    this.activityDateText = this.registrationPeriodText
+      || this.formatApplicationDates(activityDates);
     this.days.splice(0, this.days.length, ...activityDates.map((date) => {
       const normalizedDate = this.normalizeDate(date);
       return {
@@ -286,10 +303,6 @@ export class VendorBoothSelection implements OnInit {
 
   private applyStallMap(stallMap: VendorStallMap): void {
     this.activityTitle = stallMap.event.eventTitle || this.activityTitle;
-    this.activityDateText = this.formatActivityDateTime(
-      stallMap.event.startAt,
-      stallMap.event.endAt,
-    );
     this.activityAddress = stallMap.event.address || this.activityAddress;
     this.boothTotal = stallMap.stalls.length;
     this.currentMapStalls = new Map(
@@ -303,6 +316,12 @@ export class VendorBoothSelection implements OnInit {
     );
 
     const apiDates = this.parseApplyDates(stallMap.application.applyDates);
+    if (apiDates.length > 0) {
+      this.applicationDates = apiDates;
+      if (!this.registrationPeriodText) {
+        this.activityDateText = this.formatApplicationDates(apiDates);
+      }
+    }
     if (apiDates.length > 0 && !this.sameDates(apiDates, this.days.map((day) => day.date))) {
       const selectedTimes = new Map(
         this.days.map((day) => [this.normalizeDate(day.date), day.selectedAt]),
@@ -363,12 +382,31 @@ export class VendorBoothSelection implements OnInit {
     void this.alert.error('攤位地圖載入失敗', message || '無法取得最新攤位狀態，請稍後再試。');
   }
 
-  private formatActivityDateTime(startAt: string, endAt: string): string {
-    const startDate = startAt.slice(0, 10).replaceAll('-', '/');
-    const endDate = endAt.slice(0, 10).replaceAll('-', '/');
-    const startTime = startAt.slice(11, 16);
-    const endTime = endAt.slice(11, 16);
-    return `${startDate} - ${endDate}　${startTime} - ${endTime}`;
+  private extractRegistrationDates(value: string | null | undefined): string[] {
+    return this.uniqueDates(value?.match(/\d{4}[-/]\d{1,2}[-/]\d{1,2}/g) ?? []);
+  }
+
+  private uniqueDates(dates: string[]): string[] {
+    return [...new Set(
+      dates
+        .map((date) => date.trim())
+        .filter(Boolean)
+        .map((date) => this.normalizeDate(date)),
+    )];
+  }
+
+  private formatRegistrationPeriods(value: string | null | undefined): string {
+    if (!value?.trim()) return '';
+
+    return value.trim().replace(
+      /(\d{4})[-/](\d{1,2})[-/](\d{1,2})/g,
+      (_, year, month, day) =>
+        `${year}/${String(month).padStart(2, '0')}/${String(day).padStart(2, '0')}`,
+    );
+  }
+
+  private formatApplicationDates(dates: string[]): string {
+    return dates.map((date) => date.replaceAll('-', '/')).join('、');
   }
 
   private normalizeDate(date: string): string {

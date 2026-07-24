@@ -14,6 +14,14 @@
   </label>
 
   <app-dropdown
+    title="縣市"
+    [options]="cityOptions"
+    [placeholder]="cityPlaceholder"
+    [selectedValue]="selectedCity"
+    (optionSelected)="selectCity($event)"
+  ></app-dropdown>
+
+  <app-dropdown
     title="區域"
     [options]="areaOptions"
     [placeholder]="areaPlaceholder"
@@ -30,14 +38,6 @@
   ></app-date-range-selector>
 
   <app-dropdown
-    title="縣市"
-    [options]="cityOptions"
-    [placeholder]="cityPlaceholder"
-    [selectedValue]="selectedCity"
-    (optionSelected)="selectCity($event)"
-  ></app-dropdown>
-
-  <app-dropdown
     title="活動狀態"
     [options]="statusOptions"
     placeholder="全部狀態"
@@ -45,7 +45,5 @@
     (optionSelected)="selectStatus($event)"
   ></app-dropdown>
 
-  <button class="app-btn search" type="button" (click)="submitSearch()">
-    搜尋
-  </button>
+  <button class="app-btn search" type="button" (click)="submitSearch()">搜尋</button>
 </section>

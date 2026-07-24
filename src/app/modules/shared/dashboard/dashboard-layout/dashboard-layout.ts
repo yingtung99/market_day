@@ -265,6 +265,7 @@ export class DashboardLayout {
     this.homePath = '/vendor/dash-board/home';
 
     this.menuItems = [
+      { label: '攤主專區', icon: 'bi-arrow-left-circle', path: '/vendor/home' },
       { label: '首頁', icon: 'bi-house-door', path: '/vendor/dash-board/home' },
       { label: '通知中心', icon: 'bi-bell', path: '/vendor/dash-board/notification' },
       { label: '我的攤位', icon: 'bi-shop', path: '/vendor/dash-board/myStall' },
@@ -287,6 +288,7 @@ export class DashboardLayout {
     this.homePath = '/organizer/dash-board/home';
 
     this.menuItems = [
+      { label: '主辦方專區', icon: 'bi-arrow-left-circle', path: '/organizer/home' },
       { label: '首頁', icon: 'bi-house-door', path: '/organizer/dash-board/home' },
       { label: '通知中心', icon: 'bi-bell', path: '/organizer/dash-board/notification' },
       { label: '活動管理', icon: 'bi-calendar-event', path: '/organizer/dash-board/activity', requiresOrganizerProfile: true },

@@ -23,19 +23,32 @@ export class VendorMarketCard {
     return MarketStatus.getClass(status as string);
   }
 
-  getDeadlineText(startDate: string): string {
-    const start = new Date(startDate);
-    const deadline = new Date(start);
-    deadline.setDate(deadline.getDate() - 14);
+  getDeadlineText(startDate?: string, endDate?: string): string {
+    const start = this.parseDate(startDate);
+    const end = this.parseDate(endDate);
 
-    const today = new Date();
+    if (!end) return '報名時間未定';
+
+    const now = new Date();
+
+    if (start && now < start) return '報名尚未開始';
+    if (now >= end) return '報名已截止';
+
+    const today = new Date(now);
+    const deadline = new Date(end);
     today.setHours(0, 0, 0, 0);
     deadline.setHours(0, 0, 0, 0);
 
-    const diffDays = Math.ceil((deadline.getTime() - today.getTime()) / 86400000);
-
-    if (diffDays <= 0) return '報名已截止';
+    const diffDays = Math.round((deadline.getTime() - today.getTime()) / 86400000);
+    if (diffDays === 0) return '今天報名截止';
 
     return `${diffDays} 天後報名截止`;
+  }
+
+  private parseDate(value?: string): Date | null {
+    if (!value) return null;
+
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
   }
 }

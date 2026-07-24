@@ -5,12 +5,12 @@
 
   <div class="app-filter-bar logs-filter">
     <label class="app-search-field">
-      <span class="app-control-title">操作人／對象／Email／內容</span>
+      <span class="app-control-title">操作</span>
       <span class="app-search-input">
         <i class="bi bi-search"></i>
         <input
           type="search"
-          placeholder="請輸入搜尋內容"
+          placeholder="請輸入操作人／對象／Email／內容"
           [value]="searchKeyword"
           (input)="onSearchKeywordInput($event)"
           (keydown.enter)="onSearch()"

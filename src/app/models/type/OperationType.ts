@@ -14,8 +14,6 @@ export class OperationType {
     static readonly accountDisabled = '帳號停用';
     /**系統設定 */
     static readonly systemSetting = '系統設定';
-    /**通知主辦方活動款項已結清 */
-    static readonly notifyEventPayment = '款項結清通知';
 
     /** 操作類型 -> 標籤顏色 class 對應 */
     static readonly classMap: Record<string, string> = {
@@ -26,7 +24,6 @@ export class OperationType {
         [OperationType.accountRestored]: 'admin-green',
         [OperationType.accountDisabled]: 'admin-red',
         [OperationType.systemSetting]: 'admin-purple',
-        [OperationType.notifyEventPayment]: 'admin-purple',
     };
 
     /** 取得操作類型對應的標籤顏色 class */
@@ -43,7 +40,6 @@ export class OperationType {
         accountRestored: OperationType.accountRestored,
         accountDisabled: OperationType.accountDisabled,
         systemSetting: OperationType.systemSetting,
-        notifyEventPayment: OperationType.notifyEventPayment,
     };
 
     /** 把後端回傳的 AdminOperationType API 值轉成畫面用的中文標籤。 */

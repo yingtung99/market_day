@@ -259,7 +259,7 @@ export class VendorDashboardStall implements OnInit {
     this.avatarFile = null;
     this.coverFile = null;
     this.brandInfo.description = data.brandDescription || data.brandSummary || '';
-    const selectedCategory = data.categories?.[0];
+    const selectedCategory = data.category;
     this.brandInfo.category = selectedCategory?.name ?? '';
     this.brandInfo.categoryId = selectedCategory?.id ?? null;
     this.products = (data.products ?? []).map((product) => ({

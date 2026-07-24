@@ -108,9 +108,11 @@ export class VendorApplicationDetail implements OnInit {
     return this.detail.status;
   }
 
-  /** 原因使用獨立區塊呈現，不與固定寬度的狀態流程卡混排。 */
+  /** 原因使用獨立區塊呈現；尚未完成的節點不顯示於狀態流程卡。 */
   get statusProgress() {
-    return this.detail.progress.filter((step) => !this.isReasonLabel(step.label));
+    return this.detail.progress.filter(
+      (step) => !this.isReasonLabel(step.label) && step.value !== '尚未完成',
+    );
   }
 
   /** 取消／退款原因統一顯示於狀態紀錄下方。 */
@@ -272,7 +274,7 @@ export class VendorApplicationDetail implements OnInit {
         label: '攤位尺寸',
         value: api.applicationdetail.width && api.applicationdetail.length
           ? `${api.applicationdetail.width} × ${api.applicationdetail.length} 公尺`
-          : '—',
+          : '-',
       },
       { label: '攤位分區', value: displayValue(api.applicationdetail.stallZone) },
       { label: '攤位類別', value: displayValue(api.applicationdetail.stallCategory) },
@@ -346,15 +348,15 @@ export class VendorApplicationDetail implements OnInit {
     }));
     this.basicPower = api.equipmentRentals.freeBasicPower.map((item) => ({
       specification: item.powerSpecification,
-      wattage: item.wattage == null ? '—' : `${item.wattage}W`,
+      wattage: item.wattage == null ? '-' : `${item.wattage}W`,
       price: '免費',
       subtotal: formatCurrency(item.subtotal),
     }));
     this.extraPower = api.equipmentRentals.extraPower.map((item) => ({
       voltage: item.powerSpecification,
-      wattage: item.wattage == null ? '—' : `${item.wattage}W`,
+      wattage: item.wattage == null ? '-' : `${item.wattage}W`,
       price: item.unitPrice == null
-        ? '—'
+        ? '-'
         : `${formatCurrency(item.unitPrice)}${item.unit ? ` / ${item.unit}` : ''}`,
       subtotal: formatCurrency(item.total ?? item.subtotal),
     }));
@@ -758,6 +760,7 @@ function createStatusProgress(
 
 /** 日期時間只做文字格式正規化，避免 ISO 時區轉換改變後端所代表的本地時間。 */
 function formatDateTime(value: string | null | undefined): string {
+  /** 如果沒有時間則表示尚未完成 */
   if (!value?.trim()) {
     return '尚未完成';
   }
@@ -835,7 +838,7 @@ function createEmptyMarket(): MarketCardItem {
 
 function displayValue(value: string | number | null | undefined): string {
   const text = value == null ? '' : String(value).trim();
-  return text || '—';
+  return text || '-';
 }
 
 /** 詳情 API 的 unitPrice 來源為資料庫 rental_fee；rentalFee 僅保留舊格式相容。 */
@@ -844,7 +847,7 @@ function formatEquipmentRentalFee(
 ): string {
   const price = item.unitPrice ?? item.rentalFee;
   if (price == null) {
-    return '—';
+    return '-';
   }
 
   const pricingUnitLabels: Record<string, string> = {

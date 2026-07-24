@@ -151,21 +151,12 @@ describe('VendorApplicationDetail', () => {
       label: '報名日期',
       value: '2026/07/01 10:30',
     });
-    expect(component.statusProgress[1]).toEqual({
-      label: '審核時間',
-      value: '尚未完成',
-    });
     expect(component.statusProgress).toEqual([
       { label: '報名日期', value: '2026/07/01 10:30' },
-      { label: '審核時間', value: '尚未完成' },
-      { label: '取消時間', value: '尚未完成' },
-      { label: '付款時間', value: '尚未完成' },
-      { label: '退款申請時間', value: '尚未完成' },
-      { label: '退款審核時間', value: '尚未完成' },
-      { label: '已退款時間', value: '尚未完成' },
-      { label: '選位時間', value: '尚未完成' },
-      { label: '保證金退還時間', value: '尚未完成' },
     ]);
+    const progressCard: HTMLElement = fixture.nativeElement.querySelector('.progress-card');
+    expect(progressCard.querySelectorAll('.progress-step').length).toBe(1);
+    expect(progressCard.textContent).not.toContain('尚未完成');
   });
 
   it('should format registration periods consistently', () => {
@@ -180,6 +171,25 @@ describe('VendorApplicationDetail', () => {
 
   it('should display the rental fee returned by the equipment API as unit price', () => {
     expect(component.rentalEquipment[0].price).toBe('NT$150 / 張');
+  });
+
+  it('should render one blank row in every resource table without data', () => {
+    component.basicEquipment = [];
+    component.rentalEquipment = [];
+    component.basicPower = [];
+    component.extraPower = [];
+    fixture.detectChanges();
+
+    const resourceTables = Array.from(
+      fixture.nativeElement.querySelectorAll('.resource-card tbody'),
+    ) as HTMLTableSectionElement[];
+
+    expect(resourceTables.length).toBe(4);
+    resourceTables.forEach((tableBody) => {
+      const rows = tableBody.querySelectorAll('tr.resource-empty-row');
+      expect(rows.length).toBe(1);
+      expect(rows[0].textContent?.trim()).toBe('');
+    });
   });
 
   it('should display an unpublish request notice without suspending the existing application flow', () => {

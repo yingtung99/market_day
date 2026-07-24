@@ -794,6 +794,11 @@
   }
 }
 
+.application-detail-page .resource-empty-row td::after {
+  content: '\00a0';
+  visibility: hidden;
+}
+
 .application-detail-page .section-subtotal {
   margin: 14px 4px 0;
   color: var(--text-dark);

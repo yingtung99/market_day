@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig.spec.json",
+  "include": [
+    "src/**/*.d.ts",
+    "src/app/modules/vendor/dashboard/vendor-dashboard-stall/vendor-dashboard-stall.spec.ts"
+  ]
+}

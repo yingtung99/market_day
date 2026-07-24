@@ -22,7 +22,13 @@ describe('VendorBoothSelection', () => {
         statusCode: 200,
         message: 'ok',
         messageDetails: null,
-        data: { event: { eventId: 82 } } as VendorApplicationApiDetail,
+        data: {
+          event: { eventId: 82 },
+          applicationdetail: {
+            registrationPeriods: '2026-08-02 10:00-18:00',
+          },
+          stall: [],
+        } as unknown as VendorApplicationApiDetail,
       })),
       getVendorStallMap: jasmine.createSpy('getVendorStallMap').and.returnValue(of({
         statusCode: 200,
@@ -33,9 +39,9 @@ describe('VendorBoothSelection', () => {
             applicationNo: 'MD20260801001',
             applicationStatus: '待選位',
             vendorName: '測試攤主',
-            currentApplyDate: '2026-08-01',
-            applyDates: '2026-08-01,2026-08-02',
-            applyDateCount: 2,
+            currentApplyDate: '2026-08-02',
+            applyDates: '2026-08-02',
+            applyDateCount: 1,
             selectedStalls: [{
               selectedStallId: 12,
               applyDate: '2026-08-02',
@@ -92,6 +98,7 @@ describe('VendorBoothSelection', () => {
           dailyAvailability: [
             { applyDate: '2026-08-01', totalStalls: 20, remainingStalls: 19 },
             { applyDate: '2026-08-02', totalStalls: 20, remainingStalls: 18 },
+            { applyDate: '2026-08-03', totalStalls: 20, remainingStalls: 20 },
           ],
         } as VendorMarketDetail,
       })),
@@ -111,8 +118,9 @@ describe('VendorBoothSelection', () => {
     expect(dashboardService.getVendorApplicationDetail).toHaveBeenCalledOnceWith(25);
     expect(vendorService.getMarketDetail).toHaveBeenCalledOnceWith(82);
     expect(dashboardService.getVendorStallMap)
-      .toHaveBeenCalledOnceWith('MD20260801001', '2026-08-01');
-    expect(component.dateOptions).toEqual(['2026-08-01', '2026-08-02']);
+      .toHaveBeenCalledOnceWith('MD20260801001', '2026-08-02');
+    expect(component.dateOptions).toEqual(['2026-08-02']);
+    expect(component.activityDateText).toBe('2026/08/02 10:00-18:00');
     expect(component.activityTitle).toBe('夏日市集');
     expect(component.activityAddress).toBe('台北市測試路100號');
     expect(component.boothTotal).toBe(2);
@@ -122,7 +130,7 @@ describe('VendorBoothSelection', () => {
       .toBe('occupied');
     expect(component.mapData.booths.find((booth) => booth.code === 'B03')?.status)
       .toBe('occupied');
-    expect(component.days[1].booth?.code).toBe('A12');
+    expect(component.days[0].booth?.code).toBe('A12');
     expect(component.isLoading).toBeFalse();
   });
 });
