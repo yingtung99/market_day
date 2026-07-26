@@ -284,6 +284,8 @@
                 [attr.data-validation-error]="showVehicleNumberError ? 'true' : null"
                 [(ngModel)]="formData.vehicleNumber"
                 (ngModelChange)="normalizeVehicleNumber($event)"
+                [required]="formData.hasVehicle"
+                pattern="(?:[A-Za-z]{2,3}-[0-9]{3,4}|[0-9]{2,4}-[A-Za-z]{2,3})"
                 maxlength="8"
                 autocomplete="off"
                 autocapitalize="characters"

@@ -129,6 +129,7 @@ export class VendorSignupForm implements OnInit {
 
   requiresExtraPower = true;
   validationAttempted = false;
+  vehicleNumberTouched = false;
   applicationError = '';
 
   /** 車輛與備註欄位使用雙向綁定，之後可直接轉為 API payload。 */
@@ -274,7 +275,7 @@ export class VendorSignupForm implements OnInit {
 
   get showVehicleNumberError(): boolean {
     return (
-      this.validationAttempted &&
+      (this.validationAttempted || this.vehicleNumberTouched) &&
       this.formData.hasVehicle &&
       !this.isValidVehicleNumber(this.formData.vehicleNumber)
     );
@@ -329,6 +330,7 @@ export class VendorSignupForm implements OnInit {
   }
 
   normalizeVehicleNumber(value: string): void {
+    this.vehicleNumberTouched = true;
     this.formData.vehicleNumber = value
       .toUpperCase()
       .replace(/\s+/g, '')

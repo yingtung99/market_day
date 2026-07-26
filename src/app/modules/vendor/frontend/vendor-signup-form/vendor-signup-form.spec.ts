@@ -157,6 +157,18 @@ describe('VendorSignupForm', () => {
     expect(component.showVehicleNumberError).toBeFalse();
   });
 
+  it('should check the vehicle number format when the value changes', () => {
+    component.validationAttempted = false;
+
+    component.normalizeVehicleNumber('ABC1234');
+
+    expect(component.showVehicleNumberError).toBeTrue();
+
+    component.normalizeVehicleNumber('1234-ab');
+    expect(component.formData.vehicleNumber).toBe('1234-AB');
+    expect(component.showVehicleNumberError).toBeFalse();
+  });
+
   it('should limit daily rental units to the number of selected dates', () => {
     expect(component.rentalUnits('DAY')).toBe(2);
 
