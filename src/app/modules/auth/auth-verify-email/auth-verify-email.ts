@@ -174,7 +174,9 @@ export class AuthVerifyEmail implements OnInit, OnDestroy {
     sessionStorage.removeItem(getPendingRegistrationEmailKey(this.role));
     await this.alert.success(
       'Email 驗證成功',
-      '帳號已啟用，現在可以登入主辦方後台。',
+      this.role === 'vendor'
+        ? '帳號已啟用，現在可以登入攤主後台。'
+        : '帳號已啟用，現在可以登入主辦方後台。',
       '前往登入'
     );
     await this.router.navigate(
