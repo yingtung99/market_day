@@ -2,6 +2,7 @@ import { expect, test } from './fixtures';
 import {
   authRoleCases,
   getCredentials,
+  installLocalLoginStub,
   loginWithUi,
   readStoredSession,
 } from './auth-test-helpers';
@@ -15,6 +16,10 @@ test.describe('AUTH-03 本地登入', () => {
         `尚未設定 ${config.emailEnv} 或 ${config.passwordEnv}`,
       );
 
+      await installLocalLoginStub(page, config, {
+        email: email!,
+        password: password!,
+      });
       const loginResponse = await loginWithUi(page, config, email!, password!);
       const responseBody = await loginResponse.json();
 
@@ -32,9 +37,16 @@ test.describe('AUTH-03 本地登入', () => {
 
   test('@smoke 主辦方使用錯誤密碼時不能登入', async ({ page }) => {
     const organizer = authRoleCases.find((item) => item.role === 'organizer')!;
-    const { email } = getCredentials(organizer);
-    test.skip(!email, `尚未設定 ${organizer.emailEnv}`);
+    const { email, password } = getCredentials(organizer);
+    test.skip(
+      !email || !password,
+      `尚未設定 ${organizer.emailEnv} 或 ${organizer.passwordEnv}`,
+    );
 
+    await installLocalLoginStub(page, organizer, {
+      email: email!,
+      password: password!,
+    });
     const loginResponse = await loginWithUi(
       page,
       organizer,

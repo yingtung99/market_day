@@ -60,6 +60,70 @@ export function getCredentials(config: AuthRoleCase): {
   };
 }
 
+export async function installLocalLoginStub(
+  page: Page,
+  config: AuthRoleCase,
+  credentials: { email: string; password: string },
+): Promise<void> {
+  await page.route(`**/api/${config.role}/local-login`, async (route) => {
+    const payload = route.request().postDataJSON() as {
+      email?: string;
+      password?: string;
+    };
+    const isValid =
+      payload.email === credentials.email &&
+      payload.password === credentials.password;
+
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json; charset=utf-8',
+      body: JSON.stringify(
+        isValid
+          ? apiResult({
+              token: createUnsignedJwt({
+                sub: `${config.role}-auth-smoke`,
+                role: config.expectedApiRole,
+                exp: Math.floor(Date.now() / 1000) + 3600,
+              }),
+              user: createAuthUser(config, credentials.email),
+            })
+          : apiResult(null, {
+              statusCode: 400,
+              message: 'Invalid email or password',
+            }),
+      ),
+    });
+  });
+}
+
+export async function installAuthMeStub(
+  page: Page,
+  config: AuthRoleCase,
+  email: string,
+): Promise<void> {
+  await page.route('**/api/auth/me', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json; charset=utf-8',
+      body: JSON.stringify(
+        apiResult({
+          user: createAuthUser(config, email),
+        }),
+      ),
+    });
+  });
+}
+
+export async function installLogoutStub(page: Page): Promise<void> {
+  await page.route('**/api/auth/logout', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json; charset=utf-8',
+      body: JSON.stringify(apiResult(null)),
+    });
+  });
+}
+
 export async function loginWithUi(
   page: Page,
   config: AuthRoleCase,
@@ -137,4 +201,33 @@ export function createUnsignedJwt(payload: Record<string, unknown>): string {
   const encode = (value: Record<string, unknown>) =>
     Buffer.from(JSON.stringify(value)).toString('base64url');
   return `${encode({ alg: 'none', typ: 'JWT' })}.${encode(payload)}.e2e-signature`;
+}
+
+function apiResult<T>(
+  data: T,
+  options: { statusCode?: number; message?: string } = {},
+): {
+  statusCode: number;
+  message: string;
+  messageDetails: null;
+  data: T;
+} {
+  return {
+    statusCode: options.statusCode ?? 200,
+    message: options.message ?? 'success',
+    messageDetails: null,
+    data,
+  };
+}
+
+function createAuthUser(config: AuthRoleCase, email: string) {
+  return {
+    email,
+    name: `E2E ${config.label}`,
+    role: config.expectedApiRole,
+    status: 'ACTIVE',
+    isLogin: true,
+    provider: 'LOCAL',
+    googleSub: null,
+  };
 }

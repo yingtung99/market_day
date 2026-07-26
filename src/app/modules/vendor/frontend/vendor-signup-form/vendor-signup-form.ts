@@ -283,7 +283,7 @@ export class VendorSignupForm implements OnInit {
 
   get vehicleNumberErrorMessage(): string {
     return this.formData.vehicleNumber.trim()
-      ? '車牌格式不正確，請輸入如 ABC-1234 或 1234-AB。'
+      ? '車牌格式不正確，請依行照輸入，例如 ABC-1234、A1A-123 或 1234-AB。'
       : '有車輛進場時，請填寫車牌號碼。';
   }
 
@@ -331,10 +331,7 @@ export class VendorSignupForm implements OnInit {
 
   normalizeVehicleNumber(value: string): void {
     this.vehicleNumberTouched = true;
-    this.formData.vehicleNumber = value
-      .toUpperCase()
-      .replace(/\s+/g, '')
-      .replace(/[–—]/g, '-');
+    this.formData.vehicleNumber = this.formatVehicleNumber(value);
   }
 
   equipmentLineSubtotal(item: RentalEquipment): number {
@@ -376,6 +373,10 @@ export class VendorSignupForm implements OnInit {
 
   /** 驗證必填資料後，帶著完整報名 payload 前往確認頁。 */
   goToConfirm(): void {
+    if (this.formData.hasVehicle) {
+      this.formData.vehicleNumber = this.formatVehicleNumber(this.formData.vehicleNumber);
+    }
+
     this.validationAttempted = true;
     this.applicationError = '';
 
@@ -488,8 +489,23 @@ export class VendorSignupForm implements OnInit {
   }
 
   private isValidVehicleNumber(value: string): boolean {
-    const normalizedValue = value.trim().toUpperCase();
-    return /^(?:[A-Z]{2,3}-\d{3,4}|\d{2,4}-[A-Z]{2,3})$/.test(normalizedValue);
+    const normalizedValue = this.formatVehicleNumber(value);
+    const vehicleNumberPatterns = [
+      /^[A-Z]{3}-\d{2,4}$/,
+      /^(?=[A-Z0-9]{3}-\d{3}$)(?=[^-]*[A-Z])[A-Z0-9]{3}-\d{3}$/,
+      /^[A-Z]{2}-\d{2,5}$/,
+      /^\d{4}-[A-Z]{2}$/,
+    ];
+
+    return vehicleNumberPatterns.some((pattern) => pattern.test(normalizedValue));
+  }
+
+  private formatVehicleNumber(value: string): string {
+    return value
+      .normalize('NFKC')
+      .toUpperCase()
+      .replace(/\s+/g, '')
+      .replace(/[‐‑‒–—―]/g, '-');
   }
 
   private toApiDate(value: string): string {

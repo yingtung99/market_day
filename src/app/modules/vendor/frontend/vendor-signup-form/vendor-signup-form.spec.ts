@@ -169,6 +169,56 @@ describe('VendorSignupForm', () => {
     expect(component.showVehicleNumberError).toBeFalse();
   });
 
+  it('should accept supported Taiwan vehicle number formats', () => {
+    component.validationAttempted = true;
+    const validVehicleNumbers = [
+      'ABC-1234',
+      'ABC-123',
+      'A1A-123',
+      'AB-1234',
+      'AB-12345',
+      '1234-AB',
+    ];
+
+    for (const vehicleNumber of validVehicleNumbers) {
+      component.formData.vehicleNumber = vehicleNumber;
+      expect(component.showVehicleNumberError)
+        .withContext(`${vehicleNumber} should be accepted`)
+        .toBeFalse();
+    }
+  });
+
+  it('should reject malformed vehicle numbers', () => {
+    component.validationAttempted = true;
+    const invalidVehicleNumbers = [
+      'ABC1234',
+      '123-456',
+      '12-ABC',
+      'ABCD-1234',
+      'ABC-12345',
+    ];
+
+    for (const vehicleNumber of invalidVehicleNumbers) {
+      component.formData.vehicleNumber = vehicleNumber;
+      expect(component.showVehicleNumberError)
+        .withContext(`${vehicleNumber} should be rejected`)
+        .toBeTrue();
+    }
+  });
+
+  it('should normalize full-width characters before validation and submission', () => {
+    const navigateSpy = spyOn(router, 'navigate');
+    component.equipment = [];
+    component.requiresExtraPower = false;
+    component.formData.vehicleNumber = ' ａｂｃ－１２３４ ';
+
+    component.goToConfirm();
+
+    expect(component.formData.vehicleNumber).toBe('ABC-1234');
+    expect(component.showVehicleNumberError).toBeFalse();
+    expect(navigateSpy).toHaveBeenCalled();
+  });
+
   it('should limit daily rental units to the number of selected dates', () => {
     expect(component.rentalUnits('DAY')).toBe(2);
 

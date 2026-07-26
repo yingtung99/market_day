@@ -2,6 +2,8 @@ import { expect, test } from './fixtures';
 import {
   authRoleCases,
   getCredentials,
+  installLocalLoginStub,
+  installLogoutStub,
   loginWithUi,
   readStoredSession,
 } from './auth-test-helpers';
@@ -15,6 +17,11 @@ test.describe('AUTH-08 登出', () => {
         `尚未設定 ${config.emailEnv} 或 ${config.passwordEnv}`,
       );
 
+      await installLocalLoginStub(page, config, {
+        email: email!,
+        password: password!,
+      });
+      await installLogoutStub(page);
       await loginWithUi(page, config, email!, password!);
       await expect(page).toHaveURL(config.dashboardPath);
 

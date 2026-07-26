@@ -1,6 +1,62 @@
 import { expect, test as base } from '@playwright/test';
+import { environment } from '../src/environments/environment';
 
-const test = base.extend<{ visualCursor: void }>({
+const browserApiBaseUrl = environment.apiBaseUrl.replace(/\/$/, '');
+const authApiPattern = new RegExp(
+  `^${browserApiBaseUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/api/(?:` +
+    '(?:vendor|organizer|admin)/local-login|' +
+    'auth/(?:logout|resetPassword/reset)' +
+    ')(?:[/?#]|$)',
+);
+const localAppOrigin = 'http://localhost:4200';
+
+const test = base.extend<{ authApiCorsBridge: void; visualCursor: void }>({
+  authApiCorsBridge: [
+    async ({ page }, use) => {
+      await page.route(authApiPattern, async (route) => {
+        const request = route.request();
+        const requestOrigin =
+          (await request.headerValue('origin')) ?? localAppOrigin;
+
+        if (request.method() === 'OPTIONS') {
+          const requestedHeaders =
+            (await request.headerValue('access-control-request-headers')) ??
+            'content-type';
+          const requestedMethod =
+            (await request.headerValue('access-control-request-method')) ??
+            'GET,POST,PUT,PATCH,DELETE';
+
+          await route.fulfill({
+            status: 204,
+            headers: {
+              'access-control-allow-credentials': 'true',
+              'access-control-allow-headers': requestedHeaders,
+              'access-control-allow-methods': requestedMethod,
+              'access-control-allow-origin': requestOrigin,
+              vary: 'Origin',
+            },
+          });
+          return;
+        }
+
+        const { origin: _origin, ...headers } = request.headers();
+        const response = await route.fetch({ headers });
+
+        await route.fulfill({
+          response,
+          headers: {
+            ...response.headers(),
+            'access-control-allow-credentials': 'true',
+            'access-control-allow-origin': requestOrigin,
+            vary: 'Origin',
+          },
+        });
+      });
+
+      await use();
+    },
+    { auto: true },
+  ],
   visualCursor: [
     async ({ page }, use) => {
       await page.addInitScript(() => {

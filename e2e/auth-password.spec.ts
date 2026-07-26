@@ -5,6 +5,8 @@ import {
   AuthRoleCase,
   authRoleCases,
   getCredentials,
+  installAuthMeStub,
+  installLocalLoginStub,
   loginWithUi,
   readStoredSession,
 } from './auth-test-helpers';
@@ -12,7 +14,6 @@ import {
 const passwordRoles = authRoleCases.filter(
   (config) => config.role === 'vendor' || config.role === 'organizer',
 );
-const passwordApiUrl = 'http://localhost:8081/api/auth/resetPassword/reset';
 
 test.describe('AUTH-07 登入後修改密碼', () => {
   for (const config of passwordRoles) {
@@ -25,58 +26,88 @@ test.describe('AUTH-07 登入後修改密碼', () => {
       );
 
       const temporaryPassword = createTemporaryPassword(config);
-      let token = '';
-      let passwordChanged = false;
+      const passwordRequests: Array<{
+        currentPassword?: string;
+        password?: string;
+      }> = [];
 
-      try {
-        const loginResponse = await loginWithUi(page, config, email!, password!);
-        const loginBody = await loginResponse.json();
-        expect(loginBody.statusCode).toBeGreaterThanOrEqual(200);
-        expect(loginBody.statusCode).toBeLessThan(300);
+      await installLocalLoginStub(page, config, {
+        email: email!,
+        password: password!,
+      });
+      await installAuthMeStub(page, config, email!);
+      await page.route('**/api/auth/resetPassword/reset', async (route) => {
+        const payload = route.request().postDataJSON() as {
+          currentPassword?: string;
+          password?: string;
+        };
+        passwordRequests.push(payload);
+        const isCurrentPasswordValid = payload.currentPassword === password;
 
-        const session = await readStoredSession(page, config.role);
-        token = session.token ?? '';
-        expect(token).toBeTruthy();
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json; charset=utf-8',
+          body: JSON.stringify({
+            statusCode: isCurrentPasswordValid ? 200 : 400,
+            message: isCurrentPasswordValid
+              ? 'Password updated'
+              : 'Current password is incorrect',
+            messageDetails: null,
+            data: null,
+          }),
+        });
+      });
 
-        await page.goto(`/${config.role}/dash-board/account-settings`);
-        await expect(page.getByRole('heading', { name: '帳號設定' })).toBeVisible();
-        await page
-          .getByRole('button', { name: '修改密碼', exact: true })
-          .click();
+      const loginResponse = await loginWithUi(page, config, email!, password!);
+      const loginBody = await loginResponse.json();
+      expect(loginBody.statusCode).toBeGreaterThanOrEqual(200);
+      expect(loginBody.statusCode).toBeLessThan(300);
 
-        const incorrectResponse = await submitPasswordChange(
-          page,
-          'DefinitelyWrong-E2E-Password-2026!',
-          temporaryPassword,
-        );
-        const incorrectBody = await incorrectResponse.json();
+      const session = await readStoredSession(page, config.role);
+      expect(session.token).toBeTruthy();
 
-        passwordChanged = isApiSuccessStatus(incorrectBody.statusCode);
-        expect(incorrectBody.statusCode).toBe(400);
-        const incorrectMessage =
-          incorrectBody.messageDetails || incorrectBody.message;
-        expect(incorrectMessage).toBeTruthy();
-        await expect(page.getByRole('alert')).toContainText(incorrectMessage);
+      await page.goto(`/${config.role}/dash-board/account-settings`);
+      await expect(page.getByRole('heading', { name: '帳號設定' })).toBeVisible();
+      await page
+        .getByRole('button', { name: '修改密碼', exact: true })
+        .click();
 
-        const successResponse = await submitPasswordChange(
-          page,
-          password!,
-          temporaryPassword,
-        );
-        const successBody = await successResponse.json();
+      const incorrectResponse = await submitPasswordChange(
+        page,
+        'DefinitelyWrong-E2E-Password-2026!',
+        temporaryPassword,
+      );
+      const incorrectBody = await incorrectResponse.json();
 
-        expect(successBody.statusCode).toBeGreaterThanOrEqual(200);
-        expect(successBody.statusCode).toBeLessThan(300);
-        passwordChanged = isApiSuccessStatus(successBody.statusCode);
+      expect(incorrectBody.statusCode).toBe(400);
+      const incorrectMessage =
+        incorrectBody.messageDetails || incorrectBody.message;
+      expect(incorrectMessage).toBeTruthy();
+      await expect(page.getByRole('alert')).toContainText(incorrectMessage);
 
-        const successDialog = page.getByRole('dialog');
-        await expect(successDialog).toContainText('密碼已更新');
-        await successDialog.getByRole('button', { name: '確定' }).click();
-      } finally {
-        if (passwordChanged) {
-          await restorePassword(page, token, temporaryPassword, password!);
-        }
-      }
+      const successResponse = await submitPasswordChange(
+        page,
+        password!,
+        temporaryPassword,
+      );
+      const successBody = await successResponse.json();
+
+      expect(successBody.statusCode).toBeGreaterThanOrEqual(200);
+      expect(successBody.statusCode).toBeLessThan(300);
+      expect(passwordRequests).toEqual([
+        {
+          currentPassword: 'DefinitelyWrong-E2E-Password-2026!',
+          password: temporaryPassword,
+        },
+        {
+          currentPassword: password,
+          password: temporaryPassword,
+        },
+      ]);
+
+      const successDialog = page.getByRole('dialog');
+      await expect(successDialog).toContainText('密碼已更新');
+      await successDialog.getByRole('button', { name: '確定' }).click();
     });
   }
 });
@@ -93,39 +124,13 @@ async function submitPasswordChange(
 
   const responsePromise = page.waitForResponse(
     (response) =>
-      response.url() === passwordApiUrl &&
+      response.url().endsWith('/api/auth/resetPassword/reset') &&
       response.request().method() === 'POST',
   );
   await dialog.getByRole('button', { name: '儲存變更' }).click();
   return responsePromise;
 }
 
-async function restorePassword(
-  page: Page,
-  token: string,
-  temporaryPassword: string,
-  originalPassword: string,
-): Promise<void> {
-  const response = await page.request.post(passwordApiUrl, {
-    headers: { Authorization: `Bearer ${token}` },
-    data: {
-      currentPassword: temporaryPassword,
-      password: originalPassword,
-    },
-  });
-  const body = await response.json();
-
-  expect(
-    body.statusCode,
-    '測試已修改密碼，但無法還原原密碼；請立即檢查此 E2E 帳號',
-  ).toBeGreaterThanOrEqual(200);
-  expect(body.statusCode).toBeLessThan(300);
-}
-
 function createTemporaryPassword(config: AuthRoleCase): string {
   return `E2e${config.expectedApiRole}${Date.now()}A1`;
-}
-
-function isApiSuccessStatus(statusCode: number): boolean {
-  return statusCode >= 200 && statusCode < 300;
 }

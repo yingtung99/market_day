@@ -187,14 +187,18 @@ test.describe('Market Day 活動主流程', () => {
 
         await organizerPage.getByRole('button', { name: '送出審核', exact: true }).click();
         const saveEventPromise = waitForApi(organizerPage, '/api/organizer/events', 'POST');
+        const reviewEventPromise = organizerPage.waitForResponse((response) =>
+          /\/api\/organizer\/events\/\d+\/submit-review$/.test(new URL(response.url()).pathname) &&
+          response.request().method() === 'POST',
+        );
         await organizerPage.getByRole('button', { name: '確定送出', exact: true }).click();
         const saveEventBody = await expectApiSuccess<{ eventId?: number }>(await saveEventPromise);
         state.eventId = Number(saveEventBody.data?.eventId);
         expect(state.eventId).toBeGreaterThan(0);
 
-        const reviewResponse = await organizerPage.waitForResponse((response) =>
-          response.url().endsWith(`/api/organizer/events/${state.eventId}/submit-review`) &&
-          response.request().method() === 'POST',
+        const reviewResponse = await reviewEventPromise;
+        expect(new URL(reviewResponse.url()).pathname).toBe(
+          `/api/organizer/events/${state.eventId}/submit-review`,
         );
         await expectApiSuccess(reviewResponse);
         await closeAlert(organizerPage, '送出審核成功', '知道了');
