@@ -15,17 +15,23 @@ const test = base.extend<{ authApiCorsBridge: void; visualCursor: void }>({
     async ({ page }, use) => {
       await page.route(authApiPattern, async (route) => {
         const request = route.request();
-        const requestOrigin = request.headerValue('origin') ?? localAppOrigin;
+        const requestOrigin =
+          (await request.headerValue('origin')) ?? localAppOrigin;
 
         if (request.method() === 'OPTIONS') {
+          const requestedHeaders =
+            (await request.headerValue('access-control-request-headers')) ??
+            'content-type';
+          const requestedMethod =
+            (await request.headerValue('access-control-request-method')) ??
+            'GET,POST,PUT,PATCH,DELETE';
+
           await route.fulfill({
             status: 204,
             headers: {
               'access-control-allow-credentials': 'true',
-              'access-control-allow-headers':
-                request.headerValue('access-control-request-headers') ?? 'content-type',
-              'access-control-allow-methods':
-                request.headerValue('access-control-request-method') ?? 'GET,POST,PUT,PATCH,DELETE',
+              'access-control-allow-headers': requestedHeaders,
+              'access-control-allow-methods': requestedMethod,
               'access-control-allow-origin': requestOrigin,
               vary: 'Origin',
             },
