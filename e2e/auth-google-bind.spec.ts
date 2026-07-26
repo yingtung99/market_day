@@ -3,6 +3,7 @@ import {
   authRoleCases,
   getCredentials,
   installGoogleCredentialStub,
+  installLocalLoginStub,
   loginWithUi,
   readStoredSession,
 } from './auth-test-helpers';
@@ -22,6 +23,10 @@ test.describe('AUTH-06 Google 帳號綁定', () => {
         `尚未設定 ${config.emailEnv} 或 ${config.passwordEnv}`,
       );
 
+      await installLocalLoginStub(page, config, {
+        email: email!,
+        password: password!,
+      });
       const loginResponse = await loginWithUi(page, config, email!, password!);
       const loginBody = await loginResponse.json();
       expect(loginBody.statusCode).toBeGreaterThanOrEqual(200);
