@@ -147,7 +147,7 @@ function assertSingleFilter(
 test.describe('一般使用者品牌探索', () => {
   test.describe.configure({ timeout: isDemo ? 300_000 : 150_000 });
 
-  test('@smoke @regression USER-BRAND-01/02/03 品牌列表、單欄位搜尋與詳情旅程', async ({ page }) => {
+  test('@regression USER-BRAND-01/02/03 品牌列表、單欄位搜尋與詳情旅程', async ({ page }) => {
     const initialSearchPromise = page.waitForResponse(isBrandSearchResponse);
     await page.goto('/user/brands');
     await applyDemoZoom(page);

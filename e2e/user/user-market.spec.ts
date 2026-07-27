@@ -174,7 +174,7 @@ function expectSingleFilter(url: URL, name: typeof searchFilterNames[number], va
 test.describe('一般使用者公開市集', () => {
   test.describe.configure({ timeout: isDemo ? 360_000 : 180_000 });
 
-  test('@smoke @regression USER-MARKET-01/02/03 公開市集搜尋、詳情與地圖旅程', async ({ page }) => {
+  test('@regression USER-MARKET-01/02/03 公開市集搜尋、詳情與地圖旅程', async ({ page }) => {
     const initial = await openMarketList(page);
     assertSuccessfulEnvelope(initial.response, initial.body.statusCode);
     expect(initial.body.data.totalItems).toBeGreaterThan(1);
