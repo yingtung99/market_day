@@ -6,6 +6,7 @@ import { OrganizerApiService } from '../../../../core/services/organizer-api.ser
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ApplicationStatus } from '../../../../models/status/ApplicationStatus';
 import { PaymentStatus } from '../../../../models/status/PaymentStatus';
+import { ActivityStatus } from '../../../../models/status/ActivityStatus';
 import { OrganizerDashboardHome } from './organizer-dashboard-home';
 
 describe('OrganizerDashboardHome', () => {
@@ -70,6 +71,7 @@ describe('OrganizerDashboardHome', () => {
                   pendingReviewCount: 12,
                   pendingRefundConfirmationCount: 3,
                   pendingStallSelectionCount: 50,
+                  pendingPublishCount: 4,
                 },
                 totalCount: 0,
                 applications: { items: [] },
@@ -122,7 +124,7 @@ describe('OrganizerDashboardHome', () => {
   });
 
   it('should load todo card counts from the application task summary', () => {
-    expect(component.todoItems.map((item) => item.count)).toEqual([12, 3, 50]);
+    expect(component.todoItems.map((item) => item.count)).toEqual([12, 3, 50, 4]);
   });
 
   it('should display the current organizer name returned by auth API', () => {
@@ -138,6 +140,7 @@ describe('OrganizerDashboardHome', () => {
       { path: '/organizer/dash-board/register', status: ApplicationStatus.pendingReview },
       { path: '/organizer/dash-board/collection', status: PaymentStatus.refundRequested },
       { path: '/organizer/dash-board/register', status: ApplicationStatus.pendingSelection },
+      { path: '/organizer/dash-board/activity', status: ActivityStatus.readyToPublish },
     ]);
   });
 });

@@ -69,6 +69,12 @@
               <dt>退還編號</dt>
               <dd>{{ detail.depositNo || '-' }}</dd>
             </div>
+            @if (showDepositPendingReason) {
+              <div>
+                <dt>保證金未退回原因</dt>
+                <dd>尚未符合保證金退還條件</dd>
+              </div>
+            }
           }
         </dl>
       </article>

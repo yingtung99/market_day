@@ -26,6 +26,7 @@ import { AuthService } from '../../../../core/auth/auth.service';
 import { MarketDayUser } from '../../../../models/interface/shared/Auth';
 import { ApplicationStatus } from '../../../../models/status/ApplicationStatus';
 import { PaymentStatus } from '../../../../models/status/PaymentStatus';
+import { ActivityStatus } from '../../../../models/status/ActivityStatus';
 
 interface ActivityRegistrationOverview {
   eventId: number;
@@ -109,6 +110,15 @@ export class OrganizerDashboardHome extends OrganizerDashboardNotification imple
       queryParams: { status: ApplicationStatus.pendingSelection },
       iconColor: 'blue',
     },
+    {
+      icon: 'bi-calendar-check',
+      count: 0,
+      unit: '場',
+      label: '待發布',
+      path: '/organizer/dash-board/activity',
+      queryParams: { status: ActivityStatus.readyToPublish },
+      iconColor: 'purple',
+    },
   ];
 
   /** 首頁圖表展示資料；串接 API 後由首頁統計端點取代。 */
@@ -153,6 +163,7 @@ export class OrganizerDashboardHome extends OrganizerDashboardNotification imple
           待審核報名: summary.pendingReviewCount,
           退款待確認: summary.pendingRefundConfirmationCount,
           待完成選位: summary.pendingStallSelectionCount,
+          待發布: summary.pendingPublishCount,
         };
         this.todoItems = this.todoItems.map((item) => ({
           ...item,

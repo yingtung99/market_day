@@ -27,6 +27,7 @@ describe('OrganizerDashboardEventManagement', () => {
                   pendingReviewCount: 0,
                   pendingRefundConfirmationCount: 0,
                   pendingStallSelectionCount: 0,
+                  pendingPublishCount: 0,
                 },
                 totalCount: 0,
                 events: { items: [] },

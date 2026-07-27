@@ -154,7 +154,7 @@ describe('VendorDashboardHome', () => {
     });
     expect(component.notifications[0]).toEqual(jasmine.objectContaining({
       id: 30,
-      status: '新申請',
+      status: '新註冊',
       title: '報名已送出',
       date: '2026/07/15 10:00',
       unread: true,
