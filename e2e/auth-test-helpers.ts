@@ -124,6 +124,28 @@ export async function installLogoutStub(page: Page): Promise<void> {
   });
 }
 
+export async function installAdminDashboardOverviewStub(page: Page): Promise<void> {
+  await page.route('**/api/admin/dashboard/overview', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json; charset=utf-8',
+      body: JSON.stringify(
+        apiResult({
+          pendingReview: 0,
+          mapBuilding: 0,
+          pendingUnpublish: 0,
+          systemWarning: 0,
+          totalOrganizer: 0,
+          totalVender: 0,
+          totalActivity: 0,
+          active: 0,
+          notices: [],
+        }),
+      ),
+    });
+  });
+}
+
 export async function loginWithUi(
   page: Page,
   config: AuthRoleCase,

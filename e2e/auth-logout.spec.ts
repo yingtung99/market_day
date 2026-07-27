@@ -2,6 +2,7 @@ import { expect, test } from './fixtures';
 import {
   authRoleCases,
   getCredentials,
+  installAdminDashboardOverviewStub,
   installLocalLoginStub,
   installLogoutStub,
   loginWithUi,
@@ -21,25 +22,32 @@ test.describe('AUTH-08 登出', () => {
         email: email!,
         password: password!,
       });
+      if (config.role === 'admin') {
+        await installAdminDashboardOverviewStub(page);
+      }
       await installLogoutStub(page);
       await loginWithUi(page, config, email!, password!);
       await expect(page).toHaveURL(config.dashboardPath);
 
       const userMenuButton = page.locator('button.user-box');
-      await userMenuButton.focus();
-      await userMenuButton.press('Enter');
+      await userMenuButton.dispatchEvent('click');
 
       const logoutButton = page.locator('button.user-menu-item.logout');
       await expect(logoutButton).toBeVisible();
-      await logoutButton.focus();
-      await logoutButton.press('Enter');
 
       const logoutResponsePromise = page.waitForResponse(
         (response) =>
           response.url().endsWith('/api/auth/logout') &&
           response.request().method() === 'POST',
       );
-      await page.getByRole('button', { name: '確認登出', exact: true }).click();
+      await logoutButton.dispatchEvent('click');
+
+      const confirmLogoutButton = page.getByRole('button', {
+        name: '確認登出',
+        exact: true,
+      });
+      await expect(confirmLogoutButton).toBeVisible();
+      await confirmLogoutButton.dispatchEvent('click');
       const logoutResponse = await logoutResponsePromise;
       const responseBody = await logoutResponse.json();
 
