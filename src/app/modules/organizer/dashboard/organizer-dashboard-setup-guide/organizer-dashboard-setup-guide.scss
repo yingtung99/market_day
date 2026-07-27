@@ -37,6 +37,83 @@
   }
 }
 
+.first-setup-progress {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  background: var(--bg-white);
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  list-style: none;
+
+  li {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: var(--text-light);
+
+    &:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: calc(100% + 10px);
+      width: 12px;
+      border-top: 1px solid var(--border-primary);
+    }
+
+    &.current {
+      color: var(--primary-color);
+    }
+
+    &.completed {
+      color: var(--text-normal);
+    }
+  }
+
+  small,
+  strong {
+    display: block;
+    white-space: nowrap;
+  }
+
+  small {
+    margin-bottom: 1px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  strong {
+    font-size: 13px;
+    font-weight: 900;
+  }
+}
+
+.setup-progress-number {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  border-radius: 50%;
+  background: var(--bg-light);
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 900;
+
+  .current & {
+    background: var(--primary-color);
+    color: #fff;
+  }
+
+  .completed & {
+    background: var(--primary-soft);
+    color: var(--primary-color);
+  }
+}
+
 .profile-onboarding-card {
   min-width: 0;
   min-height: 0;
@@ -355,9 +432,17 @@
     overflow: visible;
   }
 
+  .setup-page-header {
+    align-items: flex-start;
+  }
 }
 
 @media (min-width: 577px) and (max-width: 992px) {
+  .first-setup-progress {
+    gap: 22px;
+    padding-inline: 12px;
+  }
+
   .profile-onboarding-card {
     gap: 20px;
   }
@@ -409,8 +494,28 @@
 }
 
 @media (max-width: 576px) {
-  .setup-page-header h1 {
-    font-size: 22px;
+  .setup-page-header {
+    flex-direction: column;
+
+    h1 {
+      font-size: 22px;
+    }
+  }
+
+  .first-setup-progress {
+    width: 100%;
+    box-sizing: border-box;
+    justify-content: space-between;
+    gap: 20px;
+
+    li {
+      flex: 1 1 0;
+    }
+
+    li:not(:last-child)::after {
+      left: calc(100% + 4px);
+      width: 12px;
+    }
   }
 
   .profile-task-header,

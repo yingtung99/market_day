@@ -10,8 +10,8 @@ export interface MenuItem {
   activePathPrefixes?: string[];
   /** 訊息數 */
   badge?: number;
-  /** 主辦方資料完成後才能使用 */
-  requiresOrganizerProfile?: boolean;
+  /** 主辦方首次設定（基本資料與藍新驗證）完成後才能使用 */
+  requiresOrganizerSetup?: boolean;
   /** 攤位資料完成後才能使用 */
   requiresVendorProfile?: boolean;
 }

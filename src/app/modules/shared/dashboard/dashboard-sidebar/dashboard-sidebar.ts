@@ -29,6 +29,12 @@ export class DashboardSidebar {
   /** 是否尚未完成主辦方資料。 */
   @Input() organizerProfileRequired = false;
 
+  /** 是否尚未完成主辦方首次設定。 */
+  @Input() organizerSetupRequired = false;
+
+  /** 是否只缺少藍新帳戶驗證。 */
+  @Input() organizerNewebPayRequired = false;
+
   /** 是否尚未完成攤位資料。 */
   @Input() vendorProfileRequired = false;
 
@@ -80,13 +86,16 @@ export class DashboardSidebar {
   }
 
   isMenuItemLocked(item: MenuItem): boolean {
-    return (this.organizerProfileRequired && item.requiresOrganizerProfile === true)
+    return (this.organizerSetupRequired && item.requiresOrganizerSetup === true)
       || (this.vendorProfileRequired && item.requiresVendorProfile === true);
   }
 
   lockedMenuItemTitle(item: MenuItem): string {
-    return item.requiresVendorProfile
-      ? '請先完成攤位資料設定，才能使用此功能'
+    if (item.requiresVendorProfile) {
+      return '請先完成攤位資料設定，才能使用此功能';
+    }
+    return this.organizerNewebPayRequired
+      ? '請先完成藍新收款帳戶綁定與 NT$1 驗證，才能使用此功能'
       : '請先完成主辦方資料設定，才能使用此功能';
   }
 

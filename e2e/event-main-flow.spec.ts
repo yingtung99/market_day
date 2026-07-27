@@ -23,6 +23,12 @@ interface MainFlowState {
   selectedStallNo: string;
 }
 
+interface OrganizerNewebPayAccountState {
+  bound?: boolean;
+  merchantId?: string | null;
+  verificationStatus?: 'UNVERIFIED' | 'PENDING' | 'VERIFIED' | 'FAILED';
+}
+
 const eventCoverPath = resolve('src/assets/images/market/cards/market-card-01.png');
 const eventMapPath = resolve('src/assets/images/market/cards/market-card-02.png');
 const brandImagePath = resolve('src/assets/images/market/cards/market-card-03.png');
@@ -82,7 +88,7 @@ test.describe('Market Day 活動主流程', () => {
     };
 
     try {
-      await test.step('FLOW-01～03 主辦方登入、儲存並重新載入資料', async () => {
+      await test.step('FLOW-01～03 主辦方登入並儲存資料', async () => {
         progress('FLOW-01～03 主辦方資料');
         await loginAndVerify(organizerPage, 'organizer', credentials!.organizer);
         await openOrganizerProfile(organizerPage);
@@ -99,8 +105,24 @@ test.describe('Market Day 活動主流程', () => {
         );
         await organizerPage.getByRole('dialog').getByRole('button', { name: '儲存', exact: true }).click();
         await expectApiSuccess(await saveResponsePromise);
-        await closeAlert(organizerPage, '主辦方資料已儲存', '確定');
+        await expect(organizerPage.locator('.organizer-profile-modal')).toBeHidden();
 
+        // 首次完成資料會直接前往藍新設定；已完成過資料的可重跑帳號仍會顯示更新成功。
+        const redirectedToNewebPay = await organizerPage
+          .waitForURL(/\/organizer\/dash-board\/newebpay/, { timeout: 2_000 })
+          .then(() => true)
+          .catch(() => false);
+        if (!redirectedToNewebPay) {
+          await closeAlert(organizerPage, '主辦方資料已儲存', '確定');
+        }
+        await demoPause(organizerPage);
+      });
+
+      await test.step('FLOW-04～06 主辦方完成藍新收款設定', async () => {
+        progress('FLOW-04～06 藍新收款設定');
+        await completeOrganizerNewebPaySetup(organizerPage);
+
+        // 金流設定完成後重新載入主辦方資料，確認前一階段儲存結果仍正確。
         await openOrganizerProfile(organizerPage);
         const profileDialog = organizerPage.getByRole('dialog');
         await expect(profileDialog.locator('input[name="organizerName"]')).toHaveValue(organizerName);
@@ -111,8 +133,8 @@ test.describe('Market Day 活動主流程', () => {
         await demoPause(organizerPage);
       });
 
-      await test.step('FLOW-04～05 主辦方建立並送審活動', async () => {
-        progress('FLOW-04～05 建立並送審活動');
+      await test.step('FLOW-07～08 主辦方建立並送審活動', async () => {
+        progress('FLOW-07～08 建立並送審活動');
         await organizerPage.goto('/organizer/dash-board/activity/detail');
         await expect(organizerPage.locator('h2.form-section-title')).toContainText('活動基本資料');
 
@@ -207,8 +229,8 @@ test.describe('Market Day 活動主流程', () => {
         await demoPause(organizerPage);
       });
 
-      await test.step('FLOW-06～08 管理員審核並完成地圖', async () => {
-        progress('FLOW-06～08 管理員審核與地圖');
+      await test.step('FLOW-09～11 管理員審核並完成地圖', async () => {
+        progress('FLOW-09～11 管理員審核與地圖');
         await loginAndVerify(adminPage, 'admin', credentials!.admin);
         await adminPage.goto(`/admin/dash-board/activity/detail/${state.eventId}`);
         await expect(adminPage).toHaveURL(new RegExp(`/admin/dash-board/activity/detail/${state.eventId}`));
@@ -231,8 +253,8 @@ test.describe('Market Day 活動主流程', () => {
         await demoPause(adminPage);
       });
 
-      await test.step('FLOW-09 主辦方發布活動並重新整理確認', async () => {
-        progress('FLOW-09 發布活動');
+      await test.step('FLOW-12 主辦方發布活動並重新整理確認', async () => {
+        progress('FLOW-12 發布活動');
         await organizerPage.goto(`/organizer/dash-board/activity/detail/${state.eventId}`);
         await expect(organizerPage.getByRole('button', { name: '發布活動', exact: true })).toBeVisible();
         await organizerPage.getByRole('button', { name: '發布活動', exact: true }).click();
@@ -249,8 +271,8 @@ test.describe('Market Day 活動主流程', () => {
         await demoPause(organizerPage);
       });
 
-      await test.step('FLOW-10～11 一般使用者第一次查看活動與主辦方', async () => {
-        progress('FLOW-10～11 公開活動');
+      await test.step('FLOW-13～14 一般使用者第一次查看活動與主辦方', async () => {
+        progress('FLOW-13～14 公開活動');
         await publicPage.goto('/user/activity-list');
         await publicPage.getByPlaceholder('請輸入活動名稱或關鍵字').fill(eventName);
         const searchPromise = waitForApi(publicPage, '/api/markets/search', 'POST');
@@ -266,8 +288,8 @@ test.describe('Market Day 活動主流程', () => {
         await demoPause(publicPage);
       });
 
-      await test.step('FLOW-12～15 攤主登入、儲存並重新載入我的攤位', async () => {
-        progress('FLOW-12～15 我的攤位');
+      await test.step('FLOW-15～18 攤主登入、儲存並重新載入我的攤位', async () => {
+        progress('FLOW-15～18 我的攤位');
         await loginAndVerify(vendorPage, 'vendor', credentials!.vendor);
         const initialStallLoadPromise = waitForApi(vendorPage, '/api/vendor/stall/load', 'GET');
         await vendorPage.goto('/vendor/dash-board/myStall');
@@ -294,8 +316,8 @@ test.describe('Market Day 活動主流程', () => {
         await demoPause(vendorPage);
       });
 
-      await test.step('FLOW-16～18 攤主帶設備資料報名並重新整理確認', async () => {
-        progress('FLOW-16～18 攤主報名');
+      await test.step('FLOW-19～21 攤主帶設備資料報名並重新整理確認', async () => {
+        progress('FLOW-19～21 攤主報名');
         await waitUntilRegistrationOpens(vendorPage, registrationOpensAt);
         await vendorPage.goto('/vendor/sign-up');
         await vendorPage.getByPlaceholder('請輸入活動名稱或關鍵字').fill(eventName);
@@ -349,8 +371,8 @@ test.describe('Market Day 活動主流程', () => {
         await demoPause(vendorPage);
       });
 
-      await test.step('FLOW-19～21 主辦方核對完整報名資料並核准', async () => {
-        progress('FLOW-19～21 核准攤主');
+      await test.step('FLOW-22～24 主辦方核對完整報名資料並核准', async () => {
+        progress('FLOW-22～24 核准攤主');
         await organizerPage.goto(
           `/organizer/dash-board/register/detail/${state.applicationId}`,
         );
@@ -374,8 +396,8 @@ test.describe('Market Day 活動主流程', () => {
         await demoPause(organizerPage);
       });
 
-      await test.step('FLOW-22～23 攤主確認待付款狀態與費用總額', async () => {
-        progress('FLOW-22～23 付款金額');
+      await test.step('FLOW-25～26 攤主確認待付款狀態與費用總額', async () => {
+        progress('FLOW-25～26 付款金額');
         await vendorPage.goto(
           `/vendor/dash-board/application-record/detail/${state.applicationId}`,
         );
@@ -401,8 +423,8 @@ test.describe('Market Day 活動主流程', () => {
         await demoPause(vendorPage, 1200);
       });
 
-      await test.step('FLOW-24～25 藍新 Sandbox 付款並重新載入確認', async () => {
-        progress('FLOW-24 藍新 Sandbox');
+      await test.step('FLOW-27～28 藍新 Sandbox 付款並重新載入確認', async () => {
+        progress('FLOW-27 藍新 Sandbox');
         let gatewayFailure: string | undefined;
         const captureGatewayFailure = (request: { url(): string; failure(): { errorText: string } | null }) => {
           if (/ccore\.newebpay\.com\/MPG\/mpg_gateway/.test(request.url())) {
@@ -482,8 +504,8 @@ test.describe('Market Day 活動主流程', () => {
         await demoPause(vendorPage);
       });
 
-      await test.step('FLOW-26～28 攤主選位並確認完整報名結果', async () => {
-        progress('FLOW-26～28 攤主選位');
+      await test.step('FLOW-29～31 攤主選位並確認完整報名結果', async () => {
+        progress('FLOW-29～31 攤主選位');
         const stallMapPromise = waitForApi(
           vendorPage,
           `/api/vendor/stall-map/${state.applicationNo}`,
@@ -544,8 +566,8 @@ test.describe('Market Day 活動主流程', () => {
         await demoPause(vendorPage);
       });
 
-      await test.step('FLOW-29 主辦方確認收款結果', async () => {
-        progress('FLOW-29 主辦方收款');
+      await test.step('FLOW-32 主辦方確認收款結果', async () => {
+        progress('FLOW-32 主辦方收款');
         const collectionPromise = waitForApi(
           organizerPage,
           `/api/organizer/payments/${state.applicationId}`,
@@ -562,8 +584,8 @@ test.describe('Market Day 活動主流程', () => {
         await demoPause(organizerPage);
       });
 
-      await test.step('FLOW-30 主辦方確認設備、用電與車牌', async () => {
-        progress('FLOW-30 主辦方設備');
+      await test.step('FLOW-33 主辦方確認設備、用電與車牌', async () => {
+        progress('FLOW-33 主辦方設備');
         const equipmentPromise = waitForApi(
           organizerPage,
           `/api/organizer/equipment/${state.eventId}`,
@@ -581,8 +603,8 @@ test.describe('Market Day 活動主流程', () => {
         await demoPause(organizerPage);
       });
 
-      await test.step('FLOW-31 主辦方從活動地圖確認攤位與品牌', async () => {
-        progress('FLOW-31 主辦方攤位地圖');
+      await test.step('FLOW-34 主辦方從活動地圖確認攤位與品牌', async () => {
+        progress('FLOW-34 主辦方攤位地圖');
         const organizerMapPromise = waitForApi(
           organizerPage,
           `/api/organizer/stall/${state.eventId}`,
@@ -602,8 +624,8 @@ test.describe('Market Day 活動主流程', () => {
         await demoPause(organizerPage, 1200);
       });
 
-      await test.step('FLOW-32～34 一般使用者再次查看公開活動與攤商', async () => {
-        progress('FLOW-32～34 公開活動結果');
+      await test.step('FLOW-35～37 一般使用者再次查看公開活動與攤商', async () => {
+        progress('FLOW-35～37 公開活動結果');
         await waitUntilBrandsPublic(publicPage, state.eventId, registrationEndsAt);
         await publicPage.goto('/user/activity-list');
         await publicPage.getByPlaceholder('請輸入活動名稱或關鍵字').fill(eventName);
@@ -854,6 +876,23 @@ async function waitUntilBrandsPublic(
 
 async function demoPause(page: Page, milliseconds = 800): Promise<void> {
   if (isDemo) await page.waitForTimeout(milliseconds);
+}
+
+async function completeOrganizerNewebPaySetup(page: Page): Promise<void> {
+  const loadPromise = waitForApi(page, '/api/organizer/newebpay/load', 'GET');
+  await page.goto('/organizer/dash-board/newebpay');
+  const loadBody = await expectApiSuccess<OrganizerNewebPayAccountState>(await loadPromise);
+  const account = loadBody.data ?? {};
+
+  await expect(page.getByRole('heading', { name: '藍新收款設定' })).toBeVisible();
+  if (account.verificationStatus === 'VERIFIED') {
+    await expect(page.getByText('藍新商店驗證已完成')).toBeVisible();
+    return;
+  }
+  throw new Error(
+    '此主辦方尚未完成藍新 Sandbox NT$1 驗證。'
+    + '請先於藍新收款設定頁人工完成驗證，再重新執行主流程測試。',
+  );
 }
 
 /**

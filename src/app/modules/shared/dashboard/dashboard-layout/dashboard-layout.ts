@@ -80,6 +80,16 @@ export class DashboardLayout {
     return this.role === 'organizer' && this.organizerAccess.needsProfile() !== false;
   }
 
+  get organizerSetupRequired(): boolean {
+    return this.role === 'organizer' && this.organizerAccess.setupCompleted() !== true;
+  }
+
+  get organizerNewebPayRequired(): boolean {
+    return this.role === 'organizer'
+      && this.organizerAccess.needsProfile() === false
+      && this.organizerAccess.setupCompleted() !== true;
+  }
+
   get dashboardTitle(): string {
     if (this.role === 'admin') return '管理員後台';
     if (this.role === 'organizer') return '主辦方後台';
@@ -200,6 +210,19 @@ export class DashboardLayout {
       return;
     }
 
+    if (this.organizerNewebPayRequired) {
+      const openNewebPay = await this.alert.confirm(
+        '請先完成藍新收款設定',
+        `完成藍新商店綁定與 NT$1 驗證後，才能使用「${item.label}」。`,
+        '前往設定',
+        '稍後再說',
+      );
+      if (openNewebPay) {
+        await this.router.navigate(['/organizer/dash-board/newebpay']);
+      }
+      return;
+    }
+
     const openProfile = await this.alert.confirm(
       '請先完成主辦方資料',
       `完成主辦方資料並儲存後，才能使用「${item.label}」。`,
@@ -213,7 +236,15 @@ export class DashboardLayout {
   }
 
   async saveOrganizerProfile(): Promise<void> {
+    const isFirstSetup = this.organizerAccess.needsProfile() !== false;
     await this.organizerAccess.refresh();
+
+    if (isFirstSetup && this.organizerAccess.needsProfile() === false) {
+      this.isOrganizerProfileOpen = false;
+      await this.router.navigate(['/organizer/dash-board/newebpay']);
+      return;
+    }
+
     await this.alert.success('主辦方資料已儲存', '資料已更新。');
   }
 
@@ -291,16 +322,17 @@ export class DashboardLayout {
       { label: '主辦方專區', icon: 'bi-arrow-left-circle', path: '/organizer/home' },
       { label: '首頁', icon: 'bi-house-door', path: '/organizer/dash-board/home' },
       { label: '通知中心', icon: 'bi-bell', path: '/organizer/dash-board/notification' },
-      { label: '活動管理', icon: 'bi-calendar-event', path: '/organizer/dash-board/activity', requiresOrganizerProfile: true },
-      { label: '報名管理', icon: 'bi-clipboard-check', path: '/organizer/dash-board/register', requiresOrganizerProfile: true },
-      { label: '收款管理', icon: 'bi-cash-coin', path: '/organizer/dash-board/collection', requiresOrganizerProfile: true },
-      { label: '攤位管理', icon: 'bi-shop', path: '/organizer/dash-board/stall', requiresOrganizerProfile: true },
-      { label: '設備管理', icon: 'bi-box-seam', path: '/organizer/dash-board/equipment', requiresOrganizerProfile: true },
-      { label: '帳務管理', icon: 'bi-receipt', path: '/organizer/dash-board/account', requiresOrganizerProfile: true },
+      { label: '活動管理', icon: 'bi-calendar-event', path: '/organizer/dash-board/activity', requiresOrganizerSetup: true },
+      { label: '報名管理', icon: 'bi-clipboard-check', path: '/organizer/dash-board/register', requiresOrganizerSetup: true },
+      { label: '收款管理', icon: 'bi-cash-coin', path: '/organizer/dash-board/collection', requiresOrganizerSetup: true },
+      { label: '攤位管理', icon: 'bi-shop', path: '/organizer/dash-board/stall', requiresOrganizerSetup: true },
+      { label: '設備管理', icon: 'bi-box-seam', path: '/organizer/dash-board/equipment', requiresOrganizerSetup: true },
+      { label: '帳務管理', icon: 'bi-receipt', path: '/organizer/dash-board/account', requiresOrganizerSetup: true },
     ];
 
     this.userMenuItems = [
       { label: '主辦方資料', icon: 'bi-person', action: 'organizer-profile' },
+      { label: '藍新收款設定', icon: 'bi-credit-card', path: '/organizer/dash-board/newebpay' },
       { label: '帳號設定', icon: 'bi-gear', action: 'account-settings' },
       { label: '登出', icon: 'bi-box-arrow-right', action: 'logout' },
     ];

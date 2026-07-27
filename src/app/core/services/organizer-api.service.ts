@@ -45,6 +45,13 @@ import {
   OrganizerNotificationFilter,
   OrganizerNotificationSearchResponse,
 } from '../../models/interface/organizer/OrganizerNotification';
+import {
+  OrganizerNewebPayAccount,
+  OrganizerNewebPayPortal,
+  OrganizerNewebPaySaveRequest,
+  OrganizerNewebPaySaveResponse,
+  OrganizerNewebPayVerificationForm,
+} from '../../models/interface/organizer/OrganizerNewebPay';
 
 @Injectable({
   providedIn: 'root',
@@ -56,6 +63,30 @@ export class OrganizerApiService {
   // 首頁與通知中心
   getOrganizerDashboardInit(): Observable<ApiResult<OrganizerDashboardInit>> {
     return this.httpService.get<OrganizerDashboardInit>('api/organizer/dashboard/init');
+  }
+
+  getOrganizerNewebPayPortal(): Observable<ApiResult<OrganizerNewebPayPortal>> {
+    return this.httpService.get<OrganizerNewebPayPortal>('api/organizer/newebpay/portal');
+  }
+
+  getOrganizerNewebPayAccount(): Observable<ApiResult<OrganizerNewebPayAccount>> {
+    return this.httpService.get<OrganizerNewebPayAccount>('api/organizer/newebpay/load');
+  }
+
+  saveOrganizerNewebPayAccount(
+    payload: OrganizerNewebPaySaveRequest,
+  ): Observable<ApiResult<OrganizerNewebPaySaveResponse>> {
+    return this.httpService.post<OrganizerNewebPaySaveResponse>(
+      'api/organizer/newebpay/save',
+      payload,
+    );
+  }
+
+  verifyOrganizerNewebPayAccount(): Observable<ApiResult<OrganizerNewebPayVerificationForm>> {
+    return this.httpService.post<OrganizerNewebPayVerificationForm>(
+      'api/organizer/newebpay/verify',
+      null,
+    );
   }
 
   getOrganizerNotifications(params: {

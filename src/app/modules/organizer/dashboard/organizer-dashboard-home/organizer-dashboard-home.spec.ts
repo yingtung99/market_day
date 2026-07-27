@@ -3,6 +3,7 @@ import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 
 import { OrganizerApiService } from '../../../../core/services/organizer-api.service';
+import { NotificationApiService } from '../../../../core/services/notification-api.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ApplicationStatus } from '../../../../models/status/ApplicationStatus';
 import { PaymentStatus } from '../../../../models/status/PaymentStatus';
@@ -43,6 +44,21 @@ describe('OrganizerDashboardHome', () => {
               message: 'OK',
               messageDetails: null,
               data: { needsProfile: false },
+            }),
+            getOrganizerNewebPayAccount: () => of({
+              statusCode: 200,
+              message: 'OK',
+              messageDetails: null,
+              data: {
+                bound: true,
+                merchantId: 'MS123456789',
+                hashKey: '',
+                hashIv: '',
+                status: 'ACTIVE',
+                verificationStatus: 'VERIFIED',
+                verifiedAt: '2026-07-27T10:00:00',
+                updatedAt: '2026-07-27T10:00:00',
+              },
             }),
             searchOrganizerEvents: () => of({
               statusCode: 200,
@@ -106,12 +122,25 @@ describe('OrganizerDashboardHome', () => {
             saveUser: jasmine.createSpy('saveUser'),
           },
         },
+        {
+          provide: NotificationApiService,
+          useValue: {
+            markAsRead: () => of({
+              statusCode: 200,
+              message: 'OK',
+              messageDetails: null,
+              data: { id: 1, isRead: true },
+            }),
+          },
+        },
       ],
     })
     .compileComponents();
 
     fixture = TestBed.createComponent(OrganizerDashboardHome);
     component = fixture.componentInstance;
+    fixture.detectChanges();
+    await fixture.whenStable();
     fixture.detectChanges();
   });
 
