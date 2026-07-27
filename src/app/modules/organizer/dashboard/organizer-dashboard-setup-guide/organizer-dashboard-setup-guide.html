@@ -2,8 +2,31 @@
   <header class="setup-page-header">
     <div>
       <h1>歡迎使用小集日主辦方後台 <span aria-hidden="true">👋</span></h1>
-      <p>完成首次設定後，即可開始建立與管理市集活動。</p>
+      <p>首次使用請依序完成以下 2 個步驟，完成後即可開始建立與管理市集活動。</p>
     </div>
+
+    <ol class="first-setup-progress" aria-label="主辦方首次設定流程">
+      <li [class.current]="needsProfile" [class.completed]="!needsProfile">
+        <span class="setup-progress-number">
+          @if (!needsProfile) {
+            <i class="bi bi-check-lg" aria-hidden="true"></i>
+          } @else {
+            1
+          }
+        </span>
+        <span>
+          <small>步驟 1</small>
+          <strong>主辦方資料</strong>
+        </span>
+      </li>
+      <li [class.current]="!needsProfile">
+        <span class="setup-progress-number">2</span>
+        <span>
+          <small>步驟 2</small>
+          <strong>藍新收款設定</strong>
+        </span>
+      </li>
+    </ol>
   </header>
 
   <section class="profile-onboarding-card" aria-labelledby="profile-setup-title">
@@ -11,45 +34,38 @@
       <div class="profile-task-summary">
         <div class="profile-task-heading">
           <h2 id="profile-setup-title">
-            <i class="bi bi-person-badge" aria-hidden="true"></i>
-            設定主辦方資料
+            <i
+              class="bi"
+              [class.bi-person-badge]="needsProfile"
+              [class.bi-credit-card]="!needsProfile"
+              aria-hidden="true"
+            ></i>
+            {{ currentTitle }}
           </h2>
         </div>
-        <p class="profile-task-description">完成主辦方資料並儲存後，才能開始設定第一場活動。</p>
+        <p class="profile-task-description">{{ currentDescription }}</p>
       </div>
 
       <div class="profile-task-actions">
-        <button type="button" class="setup-action-btn" (click)="openOrganizerProfile()">
-          <i class="bi bi-person-gear" aria-hidden="true"></i>
-          前往設定
+        <button type="button" class="setup-action-btn" (click)="openCurrentSetup()">
+          <i class="bi" [class.bi-person-gear]="needsProfile" [class.bi-credit-card]="!needsProfile" aria-hidden="true"></i>
+          {{ actionLabel }}
         </button>
       </div>
     </header>
 
     <div class="profile-requirements-panel">
-      <h3>設定內容</h3>
+      <h3>{{ needsProfile ? '設定內容' : '完成方式' }}</h3>
       <div class="profile-requirement-list">
-        <article class="profile-requirement-item">
-          <div class="requirement-icon"><i class="bi bi-building"></i></div>
-          <div>
-            <h4>主辦方基本資料</h4>
-            <p>主辦方名稱、公司／團體資訊與聯絡地址</p>
-          </div>
-        </article>
-        <article class="profile-requirement-item">
-          <div class="requirement-icon"><i class="bi bi-telephone"></i></div>
-          <div>
-            <h4>聯絡資訊</h4>
-            <p>聯絡人、電話與電子郵件</p>
-          </div>
-        </article>
-        <article class="profile-requirement-item">
-          <div class="requirement-icon"><i class="bi bi-clock"></i></div>
-          <div>
-            <h4>服務時間</h4>
-            <p>可聯繫的服務星期與服務時段</p>
-          </div>
-        </article>
+        @for (requirement of requirements; track requirement.title) {
+          <article class="profile-requirement-item">
+            <div class="requirement-icon"><i class="bi {{ requirement.icon }}"></i></div>
+            <div>
+              <h4>{{ requirement.title }}</h4>
+              <p>{{ requirement.description }}</p>
+            </div>
+          </article>
+        }
       </div>
     </div>
 

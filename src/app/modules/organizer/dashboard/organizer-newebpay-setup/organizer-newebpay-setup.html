@@ -1,0 +1,185 @@
+<section class="newebpay-setup-page page-transition">
+  <nav class="app-breadcrumb" aria-label="麵包屑">
+    <a routerLink="/organizer/dash-board/home">首頁</a>
+    <i class="bi bi-chevron-right" aria-hidden="true"></i>
+    <span>藍新收款設定</span>
+  </nav>
+
+  <header class="app-page-header">
+    <div class="page-heading">
+      <a class="app-back-link" routerLink="/organizer/dash-board/home" aria-label="返回首頁">
+        <i class="bi bi-arrow-left"></i>
+      </a>
+      <div>
+        <h1 class="app-page-title">藍新收款設定</h1>
+        <p>完成藍新商店資料設定與 NT$1 試刷驗證後，即可使用後台管理功能。</p>
+      </div>
+    </div>
+
+    @if (!isLoading && !loadError) {
+      <section class="setup-progress header-setup-progress" aria-label="首次設定進度">
+        <article class="progress-item complete">
+          <span>1</span>
+          <div><strong>主辦方資料</strong><small>已完成</small></div>
+        </article>
+        <i class="bi bi-chevron-right" aria-hidden="true"></i>
+        <article class="progress-item" [class.complete]="account?.bound">
+          <span>2</span>
+          <div><strong>藍新商店資料</strong><small>{{ account?.bound ? '已儲存' : '尚未完成' }}</small></div>
+        </article>
+        <i class="bi bi-chevron-right" aria-hidden="true"></i>
+        <article class="progress-item" [class.complete]="isVerified">
+          <span>3</span>
+          <div><strong>NT$1 試刷驗證</strong><small>{{ isVerified ? '已完成' : '尚未完成' }}</small></div>
+        </article>
+      </section>
+    }
+  </header>
+
+  @if (isLoading) {
+    <div class="page-state"><span class="spinner-border spinner-border-sm"></span>載入藍新設定中</div>
+  } @else if (loadError) {
+    <div class="page-state error">
+      <i class="bi bi-exclamation-circle"></i>
+      {{ loadError }}
+      <button type="button" class="app-btn secondary" (click)="ngOnInit()">重新載入</button>
+    </div>
+  } @else {
+    <section class="setup-section guide-section">
+      <div class="section-heading">
+        <div>
+          <h2><i class="bi bi-signpost-split"></i>藍新設定導引</h2>
+          <p>已有藍新帳號可直接登入；尚未申請請依序完成以下步驟。</p>
+        </div>
+      </div>
+
+      <div class="guide-list">
+        <article>
+          <span class="guide-number">1</span>
+          <div><h3>申請帳號或登入</h3><p>沒有藍新帳號請先註冊，已有帳號可直接登入。</p></div>
+          <button type="button" class="app-btn secondary" [disabled]="!portal?.registrationUrl" (click)="openPortal('registration')">
+            前往註冊<i class="bi bi-box-arrow-up-right"></i>
+          </button>
+        </article>
+        <article>
+          <span class="guide-number">2</span>
+          <div><h3>完成初次商店設定</h3><p>在藍新後台建立商店，已建立商店可略過。</p></div>
+          <button type="button" class="app-btn secondary" [disabled]="!portal?.loginUrl" (click)="openPortal('login')">
+            登入藍新<i class="bi bi-box-arrow-up-right"></i>
+          </button>
+        </article>
+        <article>
+          <span class="guide-number">3</span>
+          <div>
+            <h3>取得商店串接資料</h3>
+            <p>在藍新後台的「API 串接設定」複製 MerchantID、HashKey 與 HashIV。</p>
+          </div>
+        </article>
+        <article>
+          <span class="guide-number">4</span>
+          <div>
+            <h3>回到小集日完成綁定</h3>
+            <p>將三項資料填入下方欄位並儲存，再進行 NT$1 試刷驗證。</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="setup-section binding-section">
+      <div class="section-heading">
+        <div>
+          <h2><i class="bi bi-shield-lock"></i>填寫藍新商店資料</h2>
+          <p>請填入從藍新後台取得的 MerchantID、HashKey 與 HashIV。</p>
+        </div>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+        <label class="form-field merchant-field">
+          <span>MerchantID 商店代號 <b>*</b></span>
+          <input
+            type="text"
+            formControlName="merchantId"
+            autocomplete="off"
+            placeholder="例如：MS123456789"
+            [attr.aria-invalid]="hasError('merchantId')"
+          />
+          @if (hasError('merchantId')) {
+            <small class="field-error">請輸入 MerchantID 商店代號</small>
+          }
+        </label>
+
+        <label class="form-field">
+          <span>HashKey <b>*</b></span>
+          <span class="secret-control">
+            <input
+              [type]="showHashKey ? 'text' : 'password'"
+              formControlName="hashKey"
+              autocomplete="new-password"
+              placeholder="請輸入 32 個字元"
+              maxlength="32"
+              [attr.aria-invalid]="hasError('hashKey')"
+            />
+            <button type="button" (click)="showHashKey = !showHashKey">{{ showHashKey ? '隱藏' : '顯示' }}</button>
+          </span>
+          @if (hasError('hashKey')) {
+            <small class="field-error">HashKey 必須為 32 個不含空白的字元</small>
+          }
+        </label>
+
+        <label class="form-field">
+          <span>HashIV <b>*</b></span>
+          <span class="secret-control">
+            <input
+              [type]="showHashIv ? 'text' : 'password'"
+              formControlName="hashIv"
+              autocomplete="new-password"
+              placeholder="請輸入 16 個字元"
+              maxlength="16"
+              [attr.aria-invalid]="hasError('hashIv')"
+            />
+            <button type="button" (click)="showHashIv = !showHashIv">{{ showHashIv ? '隱藏' : '顯示' }}</button>
+          </span>
+          @if (hasError('hashIv')) {
+            <small class="field-error">HashIV 必須為 16 個不含空白的字元</small>
+          }
+        </label>
+
+        <div class="sensitive-data-note" role="note">
+          <i class="bi bi-lock" aria-hidden="true"></i>
+          <span>HashKey 與 HashIV 為敏感資料，請勿提供給非相關人員；送出後不會再次顯示。</span>
+        </div>
+
+        <div class="save-row">
+          <button type="submit" class="app-btn primary" [class.is-loading]="isSaving" [disabled]="isSaving || isVerifying">
+            儲存並綁定帳號
+          </button>
+          @if (account?.bound) {
+            <span><i class="bi bi-check-circle"></i>商店資料已儲存；更新資料後需重新完成驗證。</span>
+          }
+        </div>
+      </form>
+    </section>
+
+    <section class="verification-panel" [class.verified]="isVerified">
+      <div>
+        <h2><i class="bi" [ngClass]="isVerified ? 'bi-check-circle' : 'bi-credit-card'"></i>NT$1 試刷驗證</h2>
+        @if (isVerified) {
+          <p>藍新商店驗證已完成，後台管理功能已解鎖。</p>
+        } @else {
+          <p>儲存商店資料後，請進行 NT$1 試刷。付款成功後，系統將自動完成驗證並解鎖後台管理功能。</p>
+        }
+      </div>
+      @if (!isVerified) {
+        <button
+          type="button"
+          class="app-btn primary"
+          [class.is-loading]="isVerifying"
+          [disabled]="!account?.bound || isSaving || isVerifying"
+          (click)="verify()"
+        >
+          開始 NT$1 試刷驗證
+        </button>
+      }
+    </section>
+  }
+</section>

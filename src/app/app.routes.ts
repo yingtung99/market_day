@@ -9,6 +9,7 @@ import { UserAboutUs } from './modules/user/frontend/user-about-us/user-about-us
 import { OrganizerDashboardHome } from './modules/organizer/dashboard/organizer-dashboard-home/organizer-dashboard-home';
 import { OrganizerDashboardNotification } from './modules/organizer/dashboard/organizer-dashboard-notification/organizer-dashboard-notification';
 import { OrganizerDashboardSetupGuide } from './modules/organizer/dashboard/organizer-dashboard-setup-guide/organizer-dashboard-setup-guide';
+import { OrganizerNewebPaySetup } from './modules/organizer/dashboard/organizer-newebpay-setup/organizer-newebpay-setup';
 import { OrganizerDashboardEventDetail } from './modules/organizer/dashboard/organizer-dashboard-event-detail/organizer-dashboard-event-detail';
 import { OrganizerDashboardRegistrationManagement } from './modules/organizer/dashboard/organizer-dashboard-registration-management/organizer-dashboard-registration-management';
 import { OrganizerDashboardRegistrationDetail } from './modules/organizer/dashboard/organizer-dashboard-registration-detail/organizer-dashboard-registration-detail';
@@ -56,6 +57,7 @@ import { VendorBoothSelection } from './modules/vendor/dashboard/vendor-booth-se
 //登入驗證，先寫假的session
 import { authGuard } from './guards/auth-guard';
 import { organizerProfileGuard } from './guards/organizer-profile-guard';
+import { organizerSetupGuard } from './guards/organizer-setup-guard';
 
 /** 頁面設定檔 */
 import { AUTH_ROUTE_DATA } from './models/config/auth-route-data';
@@ -226,84 +228,89 @@ export const routes: Routes = [
         component: OrganizerDashboardSetupGuide,
       },
       {
+        path: 'newebpay',
+        component: OrganizerNewebPaySetup,
+        canActivate: [organizerProfileGuard],
+      },
+      {
         path: 'notification',
         component: OrganizerDashboardNotification,
       },
       {
         path: 'activity',
         component: OrganizerDashboardEventManagement,
-        canActivate: [organizerProfileGuard],
+        canActivate: [organizerSetupGuard],
       },
       {
         path: 'register',
         component: OrganizerDashboardRegistrationManagement,
-        canActivate: [organizerProfileGuard],
+        canActivate: [organizerSetupGuard],
       },
       {
         path: 'register/detail',
         component: OrganizerDashboardRegistrationDetail,
-        canActivate: [organizerProfileGuard],
+        canActivate: [organizerSetupGuard],
       },
       {
         path: 'register/detail/:id',
         component: OrganizerDashboardRegistrationDetail,
-        canActivate: [organizerProfileGuard],
+        canActivate: [organizerSetupGuard],
       },
       {
         path: 'collection',
         component: OrganizerDashboardCollectionManagement,
-        canActivate: [organizerProfileGuard],
+        canActivate: [organizerSetupGuard],
       },
       {
         path: 'collection/detail/:id',
         component: OrganizerDashboardCollectionDetail,
-        canActivate: [organizerProfileGuard],
+        canActivate: [organizerSetupGuard],
       },
       {
         path: 'equipment',
         component: OrganizerDashboardEquipmentManagement,
-        canActivate: [organizerProfileGuard],
+        canActivate: [organizerSetupGuard],
       },
       {
         path: 'stall',
         component: OrganizerDashboardStallManagement,
-        canActivate: [organizerProfileGuard],
+        canActivate: [organizerSetupGuard],
       },
       {
         path: 'stall/detail/:id',
         component: OrganizerDashboardStallDetail,
-        canActivate: [organizerProfileGuard],
+        canActivate: [organizerSetupGuard],
       },
       {
         path: 'stall/detail/:id/map',
         component: OrganizerDashboardStallMap,
-        canActivate: [organizerProfileGuard],
+        canActivate: [organizerSetupGuard],
       },
       {
         path: 'equipment/detail/:id',
         component: OrganizerDashboardEquipmentDetail,
-        canActivate: [organizerProfileGuard],
+        canActivate: [organizerSetupGuard],
       },
       {
         path: 'account',
         component: OrganizerDashboardAccountManagement,
-        canActivate: [organizerProfileGuard],
+        canActivate: [organizerSetupGuard],
       },
       {
         path: 'account/detail/:id',
         component: OrganizerDashboardAccountDetail,
-        canActivate: [organizerProfileGuard],
+        canActivate: [organizerSetupGuard],
       },
       {
         path: 'activity/detail',
         component: OrganizerDashboardEventDetail,
-        canActivate: [organizerProfileGuard],
+        canActivate: [organizerSetupGuard],
         canDeactivate: [(component: OrganizerDashboardEventDetail) => component.canDeactivate()],
       },
       {
         path: 'activity/detail/:id',
         component: OrganizerDashboardEventDetail,
-        canActivate: [organizerProfileGuard],
+        canActivate: [organizerSetupGuard],
         canDeactivate: [(component: OrganizerDashboardEventDetail) => component.canDeactivate()],
       },
       {

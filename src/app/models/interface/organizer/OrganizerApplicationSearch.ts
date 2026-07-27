@@ -2,6 +2,7 @@ export interface OrganizerTaskSummary {
   pendingReviewCount: number;
   pendingRefundConfirmationCount: number;
   pendingStallSelectionCount: number;
+  pendingPublishCount: number;
 }
 
 export interface OrganizerApplicationCategory {

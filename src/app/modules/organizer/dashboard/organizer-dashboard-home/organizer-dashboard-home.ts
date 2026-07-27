@@ -26,6 +26,7 @@ import { AuthService } from '../../../../core/auth/auth.service';
 import { MarketDayUser } from '../../../../models/interface/shared/Auth';
 import { ApplicationStatus } from '../../../../models/status/ApplicationStatus';
 import { PaymentStatus } from '../../../../models/status/PaymentStatus';
+import { ActivityStatus } from '../../../../models/status/ActivityStatus';
 
 interface ActivityRegistrationOverview {
   eventId: number;
@@ -60,6 +61,8 @@ export class OrganizerDashboardHome extends OrganizerDashboardNotification imple
   private registrationChart?: Chart<'bar'>;
   private registrationCanvas?: ElementRef<HTMLCanvasElement>;
   readonly needsProfile: Signal<boolean | null>;
+  readonly setupCompleted: Signal<boolean>;
+  readonly newebPayVerificationStatus;
   displayName = '主辦方';
 
   constructor(
@@ -70,12 +73,21 @@ export class OrganizerDashboardHome extends OrganizerDashboardNotification imple
   ) {
     super();
     this.needsProfile = this.organizerAccess.needsProfile;
+    this.setupCompleted = this.organizerAccess.setupCompleted;
+    this.newebPayVerificationStatus = this.organizerAccess.newebPayVerificationStatus;
   }
 
   /** 初始化主辦方資料，並載入首頁各區塊所需的 API 資料。 */
   override ngOnInit(): void {
-    void this.organizerAccess.initialize();
     this.loadDisplayName();
+    void this.initializeDashboard();
+  }
+
+  /** 完成首次設定才載入一般首頁資料，避免鎖定期間呼叫尚不可用的管理 API。 */
+  private async initializeDashboard(): Promise<void> {
+    await this.organizerAccess.initialize();
+    if (!this.organizerAccess.setupCompleted()) return;
+
     this.loadNotifications(3);
     this.loadDashboardData();
   }
@@ -108,6 +120,15 @@ export class OrganizerDashboardHome extends OrganizerDashboardNotification imple
       path: '/organizer/dash-board/register',
       queryParams: { status: ApplicationStatus.pendingSelection },
       iconColor: 'blue',
+    },
+    {
+      icon: 'bi-calendar-check',
+      count: 0,
+      unit: '場',
+      label: '待發布',
+      path: '/organizer/dash-board/activity',
+      queryParams: { status: ActivityStatus.readyToPublish },
+      iconColor: 'purple',
     },
   ];
 
@@ -153,6 +174,7 @@ export class OrganizerDashboardHome extends OrganizerDashboardNotification imple
           待審核報名: summary.pendingReviewCount,
           退款待確認: summary.pendingRefundConfirmationCount,
           待完成選位: summary.pendingStallSelectionCount,
+          待發布: summary.pendingPublishCount,
         };
         this.todoItems = this.todoItems.map((item) => ({
           ...item,

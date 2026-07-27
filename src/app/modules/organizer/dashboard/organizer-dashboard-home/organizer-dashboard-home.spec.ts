@@ -3,9 +3,11 @@ import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 
 import { OrganizerApiService } from '../../../../core/services/organizer-api.service';
+import { NotificationApiService } from '../../../../core/services/notification-api.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ApplicationStatus } from '../../../../models/status/ApplicationStatus';
 import { PaymentStatus } from '../../../../models/status/PaymentStatus';
+import { ActivityStatus } from '../../../../models/status/ActivityStatus';
 import { OrganizerDashboardHome } from './organizer-dashboard-home';
 
 describe('OrganizerDashboardHome', () => {
@@ -43,6 +45,21 @@ describe('OrganizerDashboardHome', () => {
               messageDetails: null,
               data: { needsProfile: false },
             }),
+            getOrganizerNewebPayAccount: () => of({
+              statusCode: 200,
+              message: 'OK',
+              messageDetails: null,
+              data: {
+                bound: true,
+                merchantId: 'MS123456789',
+                hashKey: '',
+                hashIv: '',
+                status: 'ACTIVE',
+                verificationStatus: 'VERIFIED',
+                verifiedAt: '2026-07-27T10:00:00',
+                updatedAt: '2026-07-27T10:00:00',
+              },
+            }),
             searchOrganizerEvents: () => of({
               statusCode: 200,
               message: 'OK',
@@ -70,6 +87,7 @@ describe('OrganizerDashboardHome', () => {
                   pendingReviewCount: 12,
                   pendingRefundConfirmationCount: 3,
                   pendingStallSelectionCount: 50,
+                  pendingPublishCount: 4,
                 },
                 totalCount: 0,
                 applications: { items: [] },
@@ -104,12 +122,25 @@ describe('OrganizerDashboardHome', () => {
             saveUser: jasmine.createSpy('saveUser'),
           },
         },
+        {
+          provide: NotificationApiService,
+          useValue: {
+            markAsRead: () => of({
+              statusCode: 200,
+              message: 'OK',
+              messageDetails: null,
+              data: { id: 1, isRead: true },
+            }),
+          },
+        },
       ],
     })
     .compileComponents();
 
     fixture = TestBed.createComponent(OrganizerDashboardHome);
     component = fixture.componentInstance;
+    fixture.detectChanges();
+    await fixture.whenStable();
     fixture.detectChanges();
   });
 
@@ -122,7 +153,7 @@ describe('OrganizerDashboardHome', () => {
   });
 
   it('should load todo card counts from the application task summary', () => {
-    expect(component.todoItems.map((item) => item.count)).toEqual([12, 3, 50]);
+    expect(component.todoItems.map((item) => item.count)).toEqual([12, 3, 50, 4]);
   });
 
   it('should display the current organizer name returned by auth API', () => {
@@ -138,6 +169,7 @@ describe('OrganizerDashboardHome', () => {
       { path: '/organizer/dash-board/register', status: ApplicationStatus.pendingReview },
       { path: '/organizer/dash-board/collection', status: PaymentStatus.refundRequested },
       { path: '/organizer/dash-board/register', status: ApplicationStatus.pendingSelection },
+      { path: '/organizer/dash-board/activity', status: ActivityStatus.readyToPublish },
     ]);
   });
 });

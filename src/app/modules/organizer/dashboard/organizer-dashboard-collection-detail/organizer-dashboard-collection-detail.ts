@@ -102,6 +102,7 @@ export class OrganizerDashboardCollectionDetail implements OnInit {
   get registrationStatusClass(): string { return this.getStatusClass(this.detail.registrationStatus); }
   get paymentStatusClass(): string { return PaymentStatus.getClass(this.detail.paymentStatus); }
   get depositStatusClass(): string { return DepositStatus.getClass(this.detail.depositStatus ?? DepositStatus.pending); }
+  get showDepositPendingReason(): boolean { return this.detail.depositStatus === DepositStatus.pending; }
 
   get paymentSummaryRows(): SummaryRow[] {
     return [

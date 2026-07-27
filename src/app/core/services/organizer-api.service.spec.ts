@@ -135,4 +135,49 @@ describe('OrganizerApiService operations APIs', () => {
     expect(retryRequest.request.body).toEqual({ refundNo: 'REF202607200001' });
     retryRequest.flush({ statusCode: 200, message: 'ok', data: { refundStatus: 'REFUNDED' } });
   });
+
+  it('uses the organizer NewebPay setup endpoints', () => {
+    service.getOrganizerNewebPayPortal().subscribe();
+    const portalRequest = httpTesting.expectOne(
+      `${environment.apiBaseUrl}api/organizer/newebpay/portal`,
+    );
+    expect(portalRequest.request.method).toBe('GET');
+    portalRequest.flush({
+      statusCode: 200,
+      message: 'ok',
+      data: { registrationUrl: 'https://www.newebpay.com', loginUrl: 'https://cwww.newebpay.com' },
+    });
+
+    service.getOrganizerNewebPayAccount().subscribe();
+    const loadRequest = httpTesting.expectOne(
+      `${environment.apiBaseUrl}api/organizer/newebpay/load`,
+    );
+    expect(loadRequest.request.method).toBe('GET');
+    loadRequest.flush({
+      statusCode: 200,
+      message: 'ok',
+      data: { bound: false, verificationStatus: 'UNVERIFIED' },
+    });
+
+    const payload = {
+      merchantId: 'MS123456789',
+      hashKey: '12345678901234567890123456789012',
+      hashIv: '1234567890123456',
+    };
+    service.saveOrganizerNewebPayAccount(payload).subscribe();
+    const saveRequest = httpTesting.expectOne(
+      `${environment.apiBaseUrl}api/organizer/newebpay/save`,
+    );
+    expect(saveRequest.request.method).toBe('POST');
+    expect(saveRequest.request.body).toEqual(payload);
+    saveRequest.flush({ statusCode: 200, message: 'ok', data: { bound: true } });
+
+    service.verifyOrganizerNewebPayAccount().subscribe();
+    const verifyRequest = httpTesting.expectOne(
+      `${environment.apiBaseUrl}api/organizer/newebpay/verify`,
+    );
+    expect(verifyRequest.request.method).toBe('POST');
+    expect(verifyRequest.request.body).toBeNull();
+    verifyRequest.flush({ statusCode: 200, message: 'ok', data: {} });
+  });
 });

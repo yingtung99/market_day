@@ -22,13 +22,13 @@ export class NotificationTypeDisplay {
       status: '下架申請',
     },
     /**主辦方資格申請已送出 */
-    organizerRegistrationSubmitted: { icon: 'bi bi-person-badge', iconClass: 'orange', status: '新申請' },
+    organizerRegistrationSubmitted: { icon: 'bi bi-person-badge', iconClass: 'orange', status: '新註冊' },
     /**主辦方資料已重新送出審核 */
-    organizerProfileResubmitted: { icon: 'bi bi-person-badge', iconClass: 'blue', status: '補件完成' },
+    organizerProfileResubmitted: { icon: 'bi bi-person-badge', iconClass: 'blue', status: '資料更新' },
     /**活動已送出審核 */
     eventSubmitted: { icon: 'bi bi-calendar-check', iconClass: 'orange', status: '新活動' },
     /**活動已重新送出審核 */
-    eventResubmitted: { icon: 'bi bi-calendar-check', iconClass: 'blue', status: '補件完成' },
+    eventResubmitted: { icon: 'bi bi-calendar-check', iconClass: 'blue', status: '資料更新' },
     /**活動審核通過，進入地圖建置 */
     eventApproved: { icon: 'bi bi-flag', iconClass: 'green', status: '審核通過' },
     /**活動審核未通過，需補件 */
@@ -36,9 +36,9 @@ export class NotificationTypeDisplay {
     /**活動攤位地圖建置完成 */
     eventMapCompleted: { icon: 'bi bi-map', iconClass: 'green', status: '地圖完成' },
     /**攤位申請已送出 */
-    applicationSubmitted: { icon: 'bi bi-shop-window', iconClass: 'orange', status: '新申請' },
+    applicationSubmitted: { icon: 'bi bi-shop-window', iconClass: 'orange', status: '新註冊' },
     /**攤位申請已重新送出 */
-    applicationResubmitted: { icon: 'bi bi-shop-window', iconClass: 'blue', status: '補件完成' },
+    applicationResubmitted: { icon: 'bi bi-shop-window', iconClass: 'blue', status: '資料更新' },
     /**攤位申請已通過 */
     applicationApproved: { icon: 'bi bi-shop-window', iconClass: 'green', status: '審核通過' },
     /**攤位申請已拒絕 */

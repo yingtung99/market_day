@@ -1,6 +1,9 @@
-@if (needsProfile() === true) {
-  <app-organizer-dashboard-setup-guide />
-} @else if (needsProfile() === false) {
+@if (needsProfile() !== null && !setupCompleted()) {
+  <app-organizer-dashboard-setup-guide
+    [needsProfile]="needsProfile() !== false"
+    [verificationStatus]="newebPayVerificationStatus()"
+  />
+} @else if (setupCompleted()) {
 <section class="organizer-dashboard-home page-transition">
   <header class="welcome-header">
     <div>
