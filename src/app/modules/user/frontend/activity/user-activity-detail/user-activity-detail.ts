@@ -168,7 +168,7 @@ export class UserActivityDetail {
           return;
         }
 
-        this.applySelectedStallBrand(stallNo, res.data.selectedStall?.brand ?? null);
+        this.applySelectedStallBrand(stallNo, res.data.selectedStall?.brand ?? null, true);
       },
     });
   }
@@ -254,17 +254,14 @@ export class UserActivityDetail {
     );
     const nextMap: MarketMapData = {
       ...currentMap,
-      booths: DEFAULT_MARKET_MAP_DATA.booths
-        .filter((booth) => booth.id === 'service-booth'
-          || stallsByNo.has(booth.code.trim().toUpperCase()))
-        .map((booth) => {
+      booths: DEFAULT_MARKET_MAP_DATA.booths.map((booth) => {
         if (booth.id === 'service-booth') {
           return { ...booth };
         }
 
         const stall = stallsByNo.get(booth.code.trim().toUpperCase());
         if (!stall) {
-          return { ...booth };
+          return { ...booth, status: 'available' as const, brand: undefined };
         }
 
         const occupied = this.isOccupiedStall(stall);
@@ -283,6 +280,24 @@ export class UserActivityDetail {
 
     this.marketMapsByDate[date] = nextMap;
     this.selectedMarketMap = nextMap;
+    this.loadDailyStallBrands(date, stalls.filter((stall) => this.isOccupiedStall(stall)));
+  }
+
+  private loadDailyStallBrands(date: string, stalls: UserEventStallStatusApi[]): void {
+    if (this.marketId === null) return;
+
+    for (const stall of stalls) {
+      const stallNo = stall.stallNo?.trim().toUpperCase();
+      if (!stallNo) continue;
+
+      this.marketApi.getMarketDetailByStall(this.marketId, this.toApiDate(date), stallNo)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe((res) => {
+          if (res.statusCode === 200 && res.data && date === this.selectedActivityDate) {
+            this.applySelectedStallBrand(stallNo, res.data.selectedStall?.brand ?? null, false);
+          }
+        });
+    }
   }
 
   private isOccupiedStall(stall: UserEventStallStatusApi): boolean {
@@ -334,7 +349,11 @@ export class UserActivityDetail {
     };
   }
 
-  private applySelectedStallBrand(stallNo: string, brand: UserMarketStallBrandApi | null): void {
+  private applySelectedStallBrand(
+    stallNo: string,
+    brand: UserMarketStallBrandApi | null,
+    reveal: boolean,
+  ): void {
     const boothIndex = this.selectedMarketMap.booths.findIndex((booth) => booth.code === stallNo);
     if (boothIndex < 0) {
       return;
@@ -364,6 +383,8 @@ export class UserActivityDetail {
       booths: nextBooths,
     };
     this.marketMapsByDate[this.selectedActivityDate] = this.selectedMarketMap;
+
+    if (!reveal) return;
 
     window.setTimeout(() => {
       if (brand) {

@@ -30,6 +30,8 @@
     "e2e:organizer:profile-guard": "playwright test e2e/organizer/backend/profile-incomplete.spec.ts --grep @profile-reset --headed --workers=1",
     "e2e:organizer:deposit-refund": "playwright test e2e/organizer/backend/deposit-refund.spec.ts --grep @deposit-refund --headed --workers=1",
     "e2e:organizer:refund": "playwright test e2e/organizer/backend/refund.spec.ts --grep @sandbox-refund --headed --workers=1",
+    "e2e:user-market:demo": "set E2E_DEMO=1&& set PW_SLOW_MO=1000&& playwright test e2e/user/user-market.spec.ts --headed --workers=1",
+    "e2e:user-brand:demo": "set E2E_DEMO=1&& set PW_SLOW_MO=1000&& playwright test e2e/user/user-brand.spec.ts --headed --workers=1",
     "e2e:headed": "playwright test --headed",
     "e2e:ui": "playwright test --ui --ui-port=0",
     "e2e:report": "playwright show-report",

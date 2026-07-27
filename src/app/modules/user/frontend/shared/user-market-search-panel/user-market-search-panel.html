@@ -13,6 +13,7 @@
   </label>
 
   <app-dropdown
+    #cityDropdown
     title="縣市"
     [options]="cityOptions"
     [placeholder]="cityPlaceholder"
@@ -22,6 +23,7 @@
   ></app-dropdown>
 
   <app-dropdown
+    #statusDropdown
     title="活動狀態"
     [options]="statusOptions"
     placeholder="選擇狀態"
@@ -30,6 +32,7 @@
   ></app-dropdown>
 
   <app-date-range-selector
+    #dateRangeSelector
     [title]="dateRangeTitle"
     [startDate]="startDate"
     [endDate]="endDate"
@@ -38,6 +41,10 @@
 
   <button class="app-btn search" type="button" (click)="search()">
     搜尋
+  </button>
+
+  <button class="app-btn clear" type="button" (click)="clearFilters()">
+    清除條件
   </button>
 
   @if (showCategories) {

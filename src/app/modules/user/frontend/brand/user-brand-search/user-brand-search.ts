@@ -48,12 +48,10 @@ export class UserBrandSearch {
   private readonly destroyRef = inject(DestroyRef);
 
   brandTypeOptions = BrandType.filterList;
-  marketOptions = ['全部市集'];
   currentPage = 1;
-  pageSize = 8;
+  pageSize = 6;
   keyword = '';
   selectedCategory = '';
-  selectedMarket = '';
   totalItems = 0;
   brands: BrandItem[] = [];
   isLoading = false;
@@ -70,7 +68,6 @@ export class UserBrandSearch {
         this.currentPage = Number(params.get('page')) || 1;
         this.keyword = params.get('keyword') ?? '';
         this.selectedCategory = params.get('category') ?? '';
-        this.selectedMarket = params.get('market') ?? '';
         this.loadBrands();
       });
   }
@@ -96,10 +93,6 @@ export class UserBrandSearch {
     this.selectedCategory = category === '全部類型' ? '' : category;
   }
 
-  onMarketSelected(market: string): void {
-    this.selectedMarket = market === '全部市集' ? '' : market;
-  }
-
   search(): void {
     this.currentPage = 1;
     void this.router.navigate([], {
@@ -120,7 +113,6 @@ export class UserBrandSearch {
       page,
       keyword: this.keyword || null,
       category: this.selectedCategory || null,
-      market: this.selectedMarket || null,
     };
   }
 
@@ -128,7 +120,6 @@ export class UserBrandSearch {
     const params: UserBrandSearchParams = {
       keyword: this.keyword,
       categoryName: this.selectedCategory,
-      marketName: this.selectedMarket,
       page: this.currentPage,
       pageSize: this.pageSize,
     };

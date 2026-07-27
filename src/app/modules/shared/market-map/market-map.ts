@@ -338,6 +338,7 @@ export class MarketMap implements OnChanges, OnInit {
       this.selectedBooth = booth;
       this.hasPublicBrandSelection = Boolean(booth.brand);
       this.isPreviewPinned = Boolean(booth.brand);
+      this.activePublicTab = 'detail';
       this.boothSelected.emit(booth);
       return;
     }
@@ -354,6 +355,7 @@ export class MarketMap implements OnChanges, OnInit {
       this.selectedBooth = booth;
       this.hasPublicBrandSelection = Boolean(booth.brand);
       this.isPreviewPinned = Boolean(booth.brand);
+      this.activePublicTab = 'detail';
       this.boothSelected.emit(booth);
     } else {
       this.selectedBooth = booth;

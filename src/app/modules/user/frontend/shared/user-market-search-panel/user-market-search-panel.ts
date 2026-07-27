@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { AddressApiService } from '../../../../../core/services/address-api.service';
 import { CategoryItem } from '../../../../../models/interface/user/CategoryItem';
@@ -31,6 +31,10 @@ export interface UserMarketSearchParams {
 })
 /** 一般使用者市集活動搜尋區塊，負責蒐集篩選條件並同步到 query params。 */
 export class UserMarketSearchPanel implements OnInit {
+  @ViewChild('cityDropdown') private cityDropdown?: Dropdown;
+  @ViewChild('statusDropdown') private statusDropdown?: Dropdown;
+  @ViewChild('dateRangeSelector') private dateRangeSelector?: DateRangeSelector;
+
   /** 搜尋送出後前往的頁面，讓前台不同入口共用同一套搜尋面板。 */
   @Input() searchRoute = '/user/activity-list';
 
@@ -119,7 +123,8 @@ export class UserMarketSearchPanel implements OnInit {
 
   /** 選取活動類型。 */
   selectCategory(index: number): void {
-    this.selectedCategory = this.categories[index]?.name ?? '';
+    const category = this.categories[index]?.name ?? '';
+    this.selectedCategory = this.selectedCategory === category ? '' : category;
   }
 
   /** 選取縣市。 */
@@ -150,6 +155,23 @@ export class UserMarketSearchPanel implements OnInit {
 
     void this.router.navigate([this.searchRoute], {
       queryParams: this.toQueryParams(params),
+    });
+  }
+
+  /** 清空所有條件並在同一路由重新查詢完整列表，不觸發整頁 reload。 */
+  clearFilters(): void {
+    this.keyword = '';
+    this.selectedCity = '';
+    this.selectedStatus = '';
+    this.selectedCategory = '';
+    this.startDate = '';
+    this.endDate = '';
+    this.cityDropdown?.reset();
+    this.statusDropdown?.reset();
+    this.dateRangeSelector?.reset();
+    this.searchSubmit.emit(this.getSearchParams());
+    void this.router.navigate([this.searchRoute], {
+      queryParams: this.toQueryParams(this.getSearchParams()),
     });
   }
 

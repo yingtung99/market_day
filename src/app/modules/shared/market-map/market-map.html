@@ -424,8 +424,8 @@
             </article>
             }
           }
-        } @else {
-          <div class="directory-panel">
+        }
+        <div class="directory-panel">
             <div class="directory-topbar">
               <div class="brand-zone-tabs" role="tablist" aria-label="品牌分區">
                 <button
@@ -454,7 +454,7 @@
               ></app-dropdown>
 
               <div class="directory-heading">
-                <span>共 {{ brandBooths.length }} 個品牌</span>
+                <span>共 {{ directoryBooths.length }} 個攤位</span>
               </div>
             </div>
 
@@ -474,8 +474,7 @@
                 <p class="directory-empty">沒有符合條件的品牌</p>
               }
             </div>
-          </div>
-        }
+        </div>
       </aside>
     } @else {
       <aside class="map-detail" aria-live="polite">

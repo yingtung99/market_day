@@ -32,13 +32,6 @@
             (optionSelected)="onCategorySelected($event)"
           ></app-dropdown>
 
-          <app-dropdown
-            title="參與市集"
-            [options]="marketOptions"
-            placeholder="選擇市集"
-            [selectedValue]="selectedMarket || '全部市集'"
-            (optionSelected)="onMarketSelected($event)"
-          ></app-dropdown>
         </div>
 
         <button class="app-btn search" type="button" (click)="search()">
