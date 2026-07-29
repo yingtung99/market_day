@@ -19,9 +19,13 @@
 | --- | --- |
 | 市集 Playwright | `e2e/user/user-market.spec.ts` |
 | 品牌 Playwright | `e2e/user/user-brand.spec.ts` |
-| 共用 SQL seed | `C:\MarketDay\Market-day-sql\TEST-shuan\user-market-brand-e2e-test-data.sql` |
+| 共用 SQL seed | `F:\MarketDay\sql\user-market-brand-e2e-test-data.sql` |
+| 帳號＋資料一鍵執行器 | `F:\MarketDay\sql\run-e2e-seed.ps1` |
+| 日期刷新與精準值檢查 | `e2e/sql/refresh-user-market-brand-e2e-dates.sql` |
 
-SQL seed 是本文件唯一指定的公開市集與品牌測試資料來源。測試或文件不得改回舊路徑 `e2e-public-api-test-data.sql`。
+SQL seed 是本文件唯一指定的公開市集與品牌測試資料來源。`run-e2e-seed.ps1` 會讀取前端根目錄的 `.env.e2e.local`，以後端相同的 BCrypt 實作產生雜湊，建立或更新攤主、主辦方及管理員帳號，再執行公開市集／品牌 seed；明文密碼不會寫入 SQL。
+
+每次執行公開市集／品牌 E2E 前，先載入共用 SQL seed，再執行日期刷新腳本。刷新腳本會將目前活動更新為今天至明天、歷史活動更新為 35 至 34 天前，並精準驗證 `台中市`、`西區`、`審計新村368新創聚落`、`民生路368巷` 及兩筆指定品牌；缺少任一 canonical seed 時會直接失敗，不會以其他資料代替。
 
 ### 2.1 環境
 
@@ -216,12 +220,14 @@ interface ApiEnvelope<T> {
 
 ## 8. 執行方式
 
-先在本機 `MarketDayDB` 執行指定 seed；文件更新或 Playwright 執行不得修改 SQL 檔內容。
+先在 PowerShell 執行一鍵 seed；它會從 `.env.e2e.local` 建立帳號並載入本機 `MarketDayDB`：
 
 ```powershell
-sqlcmd -S localhost -E -C -b -i C:\MarketDay\Market-day-sql\TEST-shuan\user-market-brand-e2e-test-data.sql
-sqlcmd -S localhost -E -C -b -i C:\MarketDay\Market-day-sql\TEST-shuan\user-market-brand-e2e-test-data.sql
+cd F:\MarketDay\front\market_day\market_day
+npm run e2e:seed
 ```
+
+要驗證可重複執行，可連續執行兩次；第二次不應增加 canonical 資料量。
 
 再執行 build 與測試：
 
@@ -244,7 +250,7 @@ Demo 使用 headed、單一 worker、每步慢速一秒及瀏覽器 75% 縮放�
 - 市集與品牌 ID 都取自搜尋回應，不寫死 ID。
 - `USER-MARKET-04` 同步為「春日野餐市集」。
 - 狀態只能依指定 seed 的最新 Real API 實跑結果更新，不得沿用舊 seed 的成功紀錄。
-- 本文件異動不包含 `C:\MarketDay\Market-day-sql\TEST-shuan\user-market-brand-e2e-test-data.sql`。
+- 共用 seed 位於 `F:\MarketDay\sql\user-market-brand-e2e-test-data.sql`。
 
 ### 9.1 2026-07-27 實跑結果
 

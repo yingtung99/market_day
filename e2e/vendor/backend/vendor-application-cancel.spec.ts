@@ -1,5 +1,6 @@
 import { expect, test } from '../../fixtures';
 import { fulfillApi, installVendorShellStubs } from '../vendor-flow-helpers';
+import { vendorTestData } from '../vendor-test-data';
 
 const applicationRows = [
   { id: 31, no: 'MD-E2E-00031', status: '待審核', title: '待審核測試市集' },
@@ -16,14 +17,14 @@ test.describe('攤主取消報名', () => {
         items: applicationRows.map((item) => ({
           applicationId: item.id,
           applicationNo: item.no,
-          appliedAt: '2026-07-10T10:00:00',
+          appliedAt: vendorTestData.application.createdAt,
           applicationStatus: item.status,
           eventId: 100 + item.id,
           eventImageUrl: null,
           eventTitle: item.title,
-          eventDate: '2026/08/01 - 2026/08/02',
-          eventStartAt: '2026-08-01T10:00:00',
-          eventEndAt: '2026-08-02T18:00:00',
+          eventDate: `${vendorTestData.market.startAt.slice(0, 10).replaceAll('-', '/')} - ${vendorTestData.market.endAt.slice(0, 10).replaceAll('-', '/')}`,
+          eventStartAt: vendorTestData.market.startAt,
+          eventEndAt: vendorTestData.market.endAt,
           location: '臺北市中正區',
         })),
         page: 1,

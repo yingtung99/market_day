@@ -4,6 +4,23 @@
  * 真實帳密、Token、Merchant 資料與一次性 destructive 帳號不可放在這裡，
  * 必須由未提交的 .env.e2e.local 或測試環境提供。
  */
+function relativeDate(daysFromToday: number, time: string): string {
+  const date = new Date();
+  date.setHours(12, 0, 0, 0);
+  date.setDate(date.getDate() + daysFromToday);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}T${time}`;
+}
+
+const marketStartAt = relativeDate(30, '10:00:00');
+const marketEndAt = relativeDate(31, '18:00:00');
+const registrationStartAt = relativeDate(-7, '09:00:00');
+const registrationEndAt = relativeDate(14, '23:59:00');
+const firstApplyDate = marketStartAt.slice(0, 10);
+const secondApplyDate = marketEndAt.slice(0, 10);
+
 export const vendorTestData = {
   ids: {
     eventId: 101,
@@ -89,10 +106,10 @@ export const vendorTestData = {
     district: '中正區',
     address: '測試路 1 號',
     fullAddress: '臺北市中正區測試路 1 號',
-    startAt: '2026-08-01T10:00:00',
-    endAt: '2026-08-02T18:00:00',
-    registrationStartAt: '2026-07-01T09:00:00',
-    registrationEndAt: '2026-07-28T23:59:00',
+    startAt: marketStartAt,
+    endAt: marketEndAt,
+    registrationStartAt,
+    registrationEndAt,
     serviceDays: '週六、週日',
     serviceStartTime: '09:00',
     serviceEndTime: '18:00',
@@ -103,18 +120,18 @@ export const vendorTestData = {
     stallHeight: 2.5,
     coverImageUrl: '/assets/images/market/cards/market-card-01.png',
     dailyAvailability: [
-      { applyDate: '2026-08-01', totalStalls: 20, remainingStalls: 8 },
-      { applyDate: '2026-08-02', totalStalls: 20, remainingStalls: 7 },
+      { applyDate: firstApplyDate, totalStalls: 20, remainingStalls: 8 },
+      { applyDate: secondApplyDate, totalStalls: 20, remainingStalls: 7 },
     ],
   },
   application: {
-    applyDate: '2026-08-01',
-    registrationPeriods: '2026-08-01 10:00-18:00',
+    applyDate: firstApplyDate,
+    registrationPeriods: `${firstApplyDate} 10:00-18:00`,
     vehicleNo: 'ABC-1234',
     applicantNote: '主要販售手作植栽，希望安排鄰近走道的攤位。',
     rejectedReason: '品牌類別與本次招商主題不符',
-    cancelledAt: '2026-07-12T15:20:00',
-    createdAt: '2026-07-10T10:30:00',
+    cancelledAt: relativeDate(-17, '15:20:00'),
+    createdAt: relativeDate(-19, '10:30:00'),
     validStatuses: [
       '待審核',
       '待付款',
@@ -147,13 +164,13 @@ export const vendorTestData = {
     paymentMethod: '信用卡',
     paymentNo: 'PAY-E2E-00025',
     providerTradeNo: 'NP-E2E-00025',
-    paidAt: '2026-07-20T12:00:00',
-    deadlineAt: '2026-07-25T23:59:00',
+    paidAt: relativeDate(-9, '12:00:00'),
+    deadlineAt: relativeDate(7, '23:59:00'),
     failureReason: '測試交易授權失敗',
-    expiredAt: '2026-07-26T00:00:00',
+    expiredAt: relativeDate(-3, '00:00:00'),
   },
   booth: {
-    currentApplyDate: '2026-08-01',
+    currentApplyDate: firstApplyDate,
     available: {
       stallId: 1,
       zoneId: 1,
@@ -178,7 +195,7 @@ export const vendorTestData = {
       stallNo: 'B12',
       width: 3,
       length: 3,
-      assignedAt: '2026-07-29T00:01:00',
+      assignedAt: relativeDate(-1, '00:01:00'),
     },
   },
   refund: {
@@ -186,14 +203,14 @@ export const vendorTestData = {
     method: '原信用卡退刷',
     refundNo: 'REF-E2E-00025',
     refundableAmount: 650,
-    requestedAt: '2026-07-22T10:00:00',
-    processingAt: '2026-07-22T14:00:00',
-    refundedAt: '2026-07-23T16:30:00',
+    requestedAt: relativeDate(-7, '10:00:00'),
+    processingAt: relativeDate(-7, '14:00:00'),
+    refundedAt: relativeDate(-6, '16:30:00'),
     statuses: ['退款申請中', '退款處理中', '已退款'],
   },
   deposit: {
     refundedStatus: '已退還',
-    refundedAt: '2026-08-02T19:30:00',
+    refundedAt: relativeDate(31, '19:30:00'),
     refundedMethod: '現場退還',
     withheldStatus: '不予退還',
     withheldReason: '未依規定完成撤場驗收',
@@ -209,7 +226,7 @@ export const vendorTestData = {
       content: '您的市集報名已審核通過',
       isRead: false,
       readAt: null,
-      createdAt: '2026-07-21T10:00:00',
+      createdAt: relativeDate(-8, '10:00:00'),
     },
     paymentConfirmed: {
       id: 72,
@@ -221,7 +238,7 @@ export const vendorTestData = {
       content: '已確認收到您的報名費用',
       isRead: false,
       readAt: null,
-      createdAt: '2026-07-21T10:05:00',
+      createdAt: relativeDate(-8, '10:05:00'),
     },
     boothAssigned: {
       id: 73,
@@ -232,8 +249,8 @@ export const vendorTestData = {
       title: '選位通知',
       content: '攤位地圖已開放選位',
       isRead: true,
-      readAt: '2026-07-21T10:10:00',
-      createdAt: '2026-07-21T10:08:00',
+      readAt: relativeDate(-8, '10:10:00'),
+      createdAt: relativeDate(-8, '10:08:00'),
     },
     eventUpdated: {
       id: 74,
@@ -244,8 +261,8 @@ export const vendorTestData = {
       title: '活動異動',
       content: '活動入場時間已更新',
       isRead: true,
-      readAt: '2026-07-21T10:15:00',
-      createdAt: '2026-07-21T10:12:00',
+      readAt: relativeDate(-8, '10:15:00'),
+      createdAt: relativeDate(-8, '10:12:00'),
     },
   },
 } as const;

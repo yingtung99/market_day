@@ -157,7 +157,10 @@ test.describe('一般使用者品牌探索', () => {
     assertSuccessfulEnvelope(initialResponse, initialBody.statusCode);
     assertPagination(initialBody.data.brands);
     expect(initialBody.data.totalCount).toBe(initialBody.data.brands.totalItems);
-    expect(initialBody.data.brands.items.length).toBeGreaterThan(1);
+    expect(
+      initialBody.data.brands.items.length,
+      '公開品牌 API 可連線，但缺少至少 2 筆已達品牌公開時間的 seed 資料；請先載入 User E2E seed。',
+    ).toBeGreaterThan(1);
 
     for (const brand of initialBody.data.brands.items) {
       expect(brand.brandName).not.toMatch(forbiddenPublicText);

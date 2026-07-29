@@ -1,5 +1,6 @@
 import { expect, test } from '../../fixtures';
 import { fulfillApi, installVendorShellStubs } from '../vendor-flow-helpers';
+import { vendorTestData } from '../vendor-test-data';
 
 test.describe('攤主退款資格（不測實際退款交易）', () => {
   test('@smoke VENDOR-REFUND-02 報名完成清單不提供退款入口', async ({ page }) => {
@@ -10,14 +11,14 @@ test.describe('攤主退款資格（不測實際退款交易）', () => {
         items: [{
           applicationId: 41,
           applicationNo: 'MD-E2E-00041',
-          appliedAt: '2026-07-10T10:00:00',
+          appliedAt: vendorTestData.application.createdAt,
           applicationStatus: '報名完成',
           eventId: 141,
           eventImageUrl: null,
           eventTitle: '完成選位不可退款市集',
-          eventDate: '2026/08/01',
-          eventStartAt: '2026-08-01T10:00:00',
-          eventEndAt: '2026-08-01T18:00:00',
+          eventDate: vendorTestData.market.startAt.slice(0, 10).replaceAll('-', '/'),
+          eventStartAt: vendorTestData.market.startAt,
+          eventEndAt: vendorTestData.market.endAt,
           location: '臺北市中正區',
         }],
         page: 1,

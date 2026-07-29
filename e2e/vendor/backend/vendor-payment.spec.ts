@@ -13,6 +13,9 @@ test.describe('攤主付款狀態（不測第三方金流）', () => {
   test('@smoke VENDOR-PAY-01 待付款頁顯示後端核定金額與期限', async ({ page }) => {
     await installVendorShellStubs(page, { needsProfile: false });
     const detail = createApplicationDetail('待付款');
+    const expectedDeadline = new Date(
+      vendorTestData.payment.deadlineAt,
+    ).toLocaleString('zh-TW', { hour12: false });
     await stubApplicationDetail(page, detail);
     await page.route(
       `**/api/vendor/payments/${VENDOR_APPLICATION_NO}/status`,
@@ -50,7 +53,7 @@ test.describe('攤主付款狀態（不測第三方金流）', () => {
     await expect(page.getByText(VENDOR_APPLICATION_NO, { exact: true })).toBeVisible();
     await expect(page.getByText('待付款', { exact: true })).toBeVisible();
     await expect(page.getByText(`$${vendorTestData.fees.baseTotal.toLocaleString()}`)).toHaveCount(2);
-    await expect(page.getByText(/2026\/7\/25 23:59:00/)).toBeVisible();
+    await expect(page.getByText(expectedDeadline, { exact: true })).toBeVisible();
     expect(paymentCreationRequested).toBe(false);
   });
 

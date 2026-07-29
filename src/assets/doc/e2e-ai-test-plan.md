@@ -14,15 +14,15 @@
 
 ## 2. 目前環境
 
-| 項目 | 設定 |
-| --- | --- |
-| 前端 | Angular，`http://localhost:4200` |
-| 後端 | Spring Boot，`http://localhost:8081` |
-| 測試工具 | Playwright Test |
-| 瀏覽器 | Chromium |
-| 測試目錄 | `e2e/` |
-| 設定檔 | `playwright.config.ts` |
-| 本機測試資料 | `.env.e2e.local` |
+| 項目         | 設定                                   |
+| ------------ | -------------------------------------- |
+| 前端         | Angular，`http://localhost:4200`     |
+| 後端         | Spring Boot，`http://localhost:8081` |
+| 測試工具     | Playwright Test                        |
+| 瀏覽器       | Chromium                               |
+| 測試目錄     | `e2e/`                               |
+| 設定檔       | `playwright.config.ts`               |
+| 本機測試資料 | `.env.e2e.local`                     |
 
 目前已支援：
 
@@ -60,6 +60,9 @@ E2E_ORGANIZER_EMAIL=主辦方測試信箱
 E2E_ORGANIZER_PASSWORD=主辦方測試密碼
 E2E_ADMIN_EMAIL=管理員測試信箱
 E2E_ADMIN_PASSWORD=管理員測試密碼
+E2E_NEWEBPAY_MERCHANT_ID=藍新 Sandbox 商店代號
+E2E_NEWEBPAY_HASH_KEY=藍新 Sandbox HashKey
+E2E_NEWEBPAY_HASH_IV=藍新 Sandbox HashIV
 PW_SLOW_MO=1500
 PW_UI_SLOW_MO=300
 E2E_TARGET_ORGANIZER_EMAIL=目標主辦方測試信箱
@@ -73,6 +76,7 @@ E2E_TARGET_VENDOR_PASSWORD=目標攤主測試密碼
 - 必須使用專用測試帳號，不得使用正式或個人帳號。
 - `E2E_TARGET_ORGANIZER_*`／`E2E_TARGET_VENDOR_*` 是管理員後台測試專用的停用/恢復帳號目標，不可與 `E2E_ORGANIZER_EMAIL`／`E2E_VENDOR_EMAIL` 共用同一個帳號。
 - `.env.e2e.local` 不可提交 Git。
+- 藍新三項憑證只可使用 Sandbox 商店，且不可寫入測試碼、文件或測試報告。
 - 沒有帳密的角色登入與登出案例會標示為 skipped。
 
 ## 5. 執行指令
@@ -118,11 +122,11 @@ npm run e2e:destructive
 
 ## 6. Smoke、Full、Destructive 規則
 
-| 分類 | 使用情況 | 執行時機 |
-| --- | --- | --- |
-| `@smoke` | 快速、可重跑、不需要人工輸入、不破壞資料 | 每次 push 前 |
-| `@full` | 較長的完整正常流程，可能需要建立及清理測試資料 | 合併重要功能或發布前 |
-| `@destructive` | 註銷、刪除、退款等不可逆或高影響操作 | 使用專用資料手動執行 |
+| 分類             | 使用情況                                       | 執行時機             |
+| ---------------- | ---------------------------------------------- | -------------------- |
+| `@smoke`       | 快速、可重跑、不需要人工輸入、不破壞資料       | 每次 push 前         |
+| `@full`        | 較長的完整正常流程，可能需要建立及清理測試資料 | 合併重要功能或發布前 |
+| `@destructive` | 註銷、刪除、退款等不可逆或高影響操作           | 使用專用資料手動執行 |
 
 選擇方式：
 
@@ -140,10 +144,10 @@ npm run e2e:destructive
 
 測試分類和 API 驗證範圍是兩件事：
 
-| 方式 | 可以證明什麼 |
-| --- | --- |
-| Real API | 前端、後端、權限與資料格式實際整合成功 |
-| UI Stub | 前端操作、導頁與訊息正常，不代表真實後端或外部服務成功 |
+| 方式     | 可以證明什麼                                           |
+| -------- | ------------------------------------------------------ |
+| Real API | 前端、後端、權限與資料格式實際整合成功                 |
+| UI Stub  | 前端操作、導頁與訊息正常，不代表真實後端或外部服務成功 |
 
 Email、Google OAuth 或不可安全改動的帳號狀態，可以先用 Playwright `page.route()` 或 Google SDK Stub 撰寫 UI Smoke，但測試計畫必須標示為「UI Smoke」，不可寫成真實 API 已完成。
 

@@ -177,7 +177,10 @@ test.describe('一般使用者公開市集', () => {
   test('@regression USER-MARKET-01/02/03 公開市集搜尋、詳情與地圖旅程', async ({ page }) => {
     const initial = await openMarketList(page);
     assertSuccessfulEnvelope(initial.response, initial.body.statusCode);
-    expect(initial.body.data.totalItems).toBeGreaterThan(1);
+    expect(
+      initial.body.data.totalItems,
+      '公開市集 API 可連線，但缺少至少 2 筆符合公開條件的目前活動 seed；請先載入 User E2E seed。',
+    ).toBeGreaterThan(1);
 
     const filterCategories = ['餐飲美食', '文創手作', '親子家庭', '寵物生活', '植物選物', '服飾配件', '玩具選物'];
     for (const initialMarket of initial.body.data.items) {
@@ -398,7 +401,10 @@ test.describe('一般使用者公開市集', () => {
     const historyBody = (await historyResponse.json()) as ApiEnvelope<PageResponse<MarketCard>>;
     assertSuccessfulEnvelope(historyResponse, historyBody.statusCode);
     expect(new URL(historyResponse.url()).searchParams.get('eventType')).toBe('歷史活動');
-    expect(historyBody.data.items.some((item) => item.title === seededHistoryMarketTitle)).toBe(true);
+    expect(
+      historyBody.data.items.some((item) => item.title === seededHistoryMarketTitle),
+      `公開歷史活動 API 可連線，但找不到指定 seed「${seededHistoryMarketTitle}」。`,
+    ).toBe(true);
     const seededHistoryMarket = historyBody.data.items.find(
       (item) => item.title === seededHistoryMarketTitle,
     );

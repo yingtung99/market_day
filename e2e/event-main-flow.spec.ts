@@ -12,6 +12,7 @@ import {
 interface ApiEnvelope<T = Record<string, unknown>> {
   statusCode?: number;
   message?: string;
+  messageDetails?: string | null;
   data?: T;
 }
 
@@ -38,6 +39,11 @@ const isDemo = process.env['E2E_DEMO'] === '1';
 const apiBaseUrl = (process.env['E2E_API_BASE_URL'] ?? 'http://localhost:8081').replace(/\/$/, '');
 const newebPaySandboxCardNumber = '4000221111111111';
 const newebPaySandboxSecurityCode = '123';
+const organizerNewebPayCredentials = {
+  merchantId: process.env['E2E_NEWEBPAY_MERCHANT_ID']?.trim() ?? '',
+  hashKey: process.env['E2E_NEWEBPAY_HASH_KEY']?.trim() ?? '',
+  hashIv: process.env['E2E_NEWEBPAY_HASH_IV']?.trim() ?? '',
+};
 
 test.describe('Market Day 活動主流程', () => {
   test('@main-flow 活動從建立、付款、選位到公開結果的完整主流程', async ({ browser }) => {
@@ -52,9 +58,9 @@ test.describe('Market Day 活動主流程', () => {
     const brandName = '山眠植作';
     const productName = '苔球與原木植栽組';
     const vehicleNo = createUniqueVehicleNo();
-    // 建立活動與上傳圖片需要一些時間，開始時間至少預留 5 分鐘，避免
-    // 測試執行較慢時送審被「報名開始時間已過」的前端驗證擋下。
-    const registrationOpensAt = roundUpToMinute(new Date(Date.now() + 5 * 60 * 1000));
+    // 建立時仍需讓報名開始時間位於未來；兩分鐘足以完成建立及送審，
+    // 同時避免 FLOW-19 在前段執行順利時固定空等數分鐘。
+    const registrationOpensAt = roundUpToMinute(new Date(Date.now() + 2 * 60 * 1000));
     // 留出足夠操作時間，同時讓本次 E2E 能等待每分鐘執行的自動選位排程。
     const registrationWindowMs = isDemo ? 8 * 60 * 1000 : 2 * 60 * 1000;
     const registrationEndsAt = new Date(registrationOpensAt.getTime() + registrationWindowMs);
@@ -90,6 +96,7 @@ test.describe('Market Day 活動主流程', () => {
     try {
       await test.step('FLOW-01～03 主辦方登入並儲存資料', async () => {
         progress('FLOW-01～03 主辦方資料');
+        await organizerPage.bringToFront();
         await loginAndVerify(organizerPage, 'organizer', credentials!.organizer);
         await openOrganizerProfile(organizerPage);
         await fillOrganizerProfile(
@@ -108,10 +115,9 @@ test.describe('Market Day 活動主流程', () => {
         await expect(organizerPage.locator('.organizer-profile-modal')).toBeHidden();
 
         // 首次完成資料會直接前往藍新設定；已完成過資料的可重跑帳號仍會顯示更新成功。
-        const redirectedToNewebPay = await organizerPage
-          .waitForURL(/\/organizer\/dash-board\/newebpay/, { timeout: 2_000 })
-          .then(() => true)
-          .catch(() => false);
+        await organizerPage.waitForTimeout(500);
+        const redirectedToNewebPay =
+          /\/organizer\/dash-board\/newebpay/.test(organizerPage.url());
         if (!redirectedToNewebPay) {
           await closeAlert(organizerPage, '主辦方資料已儲存', '確定');
         }
@@ -120,6 +126,7 @@ test.describe('Market Day 活動主流程', () => {
 
       await test.step('FLOW-04～06 主辦方完成藍新收款設定', async () => {
         progress('FLOW-04～06 藍新收款設定');
+        await organizerPage.bringToFront();
         await completeOrganizerNewebPaySetup(organizerPage);
 
         // 金流設定完成後重新載入主辦方資料，確認前一階段儲存結果仍正確。
@@ -135,6 +142,7 @@ test.describe('Market Day 活動主流程', () => {
 
       await test.step('FLOW-07～08 主辦方建立並送審活動', async () => {
         progress('FLOW-07～08 建立並送審活動');
+        await organizerPage.bringToFront();
         await organizerPage.goto('/organizer/dash-board/activity/detail');
         await expect(organizerPage.locator('h2.form-section-title')).toContainText('活動基本資料');
 
@@ -231,6 +239,7 @@ test.describe('Market Day 活動主流程', () => {
 
       await test.step('FLOW-09～11 管理員審核並完成地圖', async () => {
         progress('FLOW-09～11 管理員審核與地圖');
+        await adminPage.bringToFront();
         await loginAndVerify(adminPage, 'admin', credentials!.admin);
         await adminPage.goto(`/admin/dash-board/activity/detail/${state.eventId}`);
         await expect(adminPage).toHaveURL(new RegExp(`/admin/dash-board/activity/detail/${state.eventId}`));
@@ -255,6 +264,7 @@ test.describe('Market Day 活動主流程', () => {
 
       await test.step('FLOW-12 主辦方發布活動並重新整理確認', async () => {
         progress('FLOW-12 發布活動');
+        await organizerPage.bringToFront();
         await organizerPage.goto(`/organizer/dash-board/activity/detail/${state.eventId}`);
         await expect(organizerPage.getByRole('button', { name: '發布活動', exact: true })).toBeVisible();
         await organizerPage.getByRole('button', { name: '發布活動', exact: true }).click();
@@ -273,6 +283,7 @@ test.describe('Market Day 活動主流程', () => {
 
       await test.step('FLOW-13～14 一般使用者第一次查看活動與主辦方', async () => {
         progress('FLOW-13～14 公開活動');
+        await publicPage.bringToFront();
         await publicPage.goto('/user/activity-list');
         await publicPage.getByPlaceholder('請輸入活動名稱或關鍵字').fill(eventName);
         const searchPromise = waitForApi(publicPage, '/api/markets/search', 'POST');
@@ -290,6 +301,7 @@ test.describe('Market Day 活動主流程', () => {
 
       await test.step('FLOW-15～18 攤主登入、儲存並重新載入我的攤位', async () => {
         progress('FLOW-15～18 我的攤位');
+        await vendorPage.bringToFront();
         await loginAndVerify(vendorPage, 'vendor', credentials!.vendor);
         const initialStallLoadPromise = waitForApi(vendorPage, '/api/vendor/stall/load', 'GET');
         await vendorPage.goto('/vendor/dash-board/myStall');
@@ -318,6 +330,7 @@ test.describe('Market Day 活動主流程', () => {
 
       await test.step('FLOW-19～21 攤主帶設備資料報名並重新整理確認', async () => {
         progress('FLOW-19～21 攤主報名');
+        await vendorPage.bringToFront();
         await waitUntilRegistrationOpens(vendorPage, registrationOpensAt);
         await vendorPage.goto('/vendor/sign-up');
         await vendorPage.getByPlaceholder('請輸入活動名稱或關鍵字').fill(eventName);
@@ -373,6 +386,7 @@ test.describe('Market Day 活動主流程', () => {
 
       await test.step('FLOW-22～24 主辦方核對完整報名資料並核准', async () => {
         progress('FLOW-22～24 核准攤主');
+        await organizerPage.bringToFront();
         await organizerPage.goto(
           `/organizer/dash-board/register/detail/${state.applicationId}`,
         );
@@ -398,6 +412,7 @@ test.describe('Market Day 活動主流程', () => {
 
       await test.step('FLOW-25～26 攤主確認待付款狀態與費用總額', async () => {
         progress('FLOW-25～26 付款金額');
+        await vendorPage.bringToFront();
         await vendorPage.goto(
           `/vendor/dash-board/application-record/detail/${state.applicationId}`,
         );
@@ -425,6 +440,7 @@ test.describe('Market Day 活動主流程', () => {
 
       await test.step('FLOW-27～28 藍新 Sandbox 付款並重新載入確認', async () => {
         progress('FLOW-27 藍新 Sandbox');
+        await vendorPage.bringToFront();
         let gatewayFailure: string | undefined;
         const captureGatewayFailure = (request: { url(): string; failure(): { errorText: string } | null }) => {
           if (/ccore\.newebpay\.com\/MPG\/mpg_gateway/.test(request.url())) {
@@ -456,8 +472,10 @@ test.describe('Market Day 活動主流程', () => {
         } finally {
           vendorPage.off('requestfailed', captureGatewayFailure);
         }
-        await vendorPage.waitForLoadState('domcontentloaded');
-        await vendorPage.waitForTimeout(3_000);
+        // 藍新頁面包含第三方資源及多段導頁，domcontentloaded 可能在已看到
+        // 付款頁後仍等滿 navigation timeout。後續欄位 locator 本身會等待
+        // 真正可互動的付款表單，因此不再額外等待 load state 或固定 3 秒。
+        await expect(vendorPage.locator('body')).toBeVisible();
 
         const paymentPageText = await vendorPage.locator('body').innerText();
         if (/Access Denied|permission to access/i.test(paymentPageText)) {
@@ -481,12 +499,21 @@ test.describe('Market Day 活動主流程', () => {
           gatewayDialog = `${dialog.type()}: ${dialog.message()}`;
           await dialog.accept();
         });
+        const vendorReturnRequestPromise = vendorPage.waitForRequest((request) => {
+          const url = new URL(request.url());
+          return url.pathname === '/api/newebpay/return';
+        }, { timeout: 90_000 });
         const submitText = vendorPage.getByText('確認送出', { exact: true });
         await submitText.click();
         await vendorPage.waitForTimeout(2_000);
         if (gatewayDialog.startsWith('alert:')) {
           throw new Error(`藍新付款資料驗證失敗：${gatewayDialog.slice('alert:'.length).trim()}`);
         }
+        const vendorReturnRequest = await vendorReturnRequestPromise;
+        expect(
+          vendorReturnRequest.method(),
+          '攤主付款完成後，藍新應 POST 到攤主專用 ReturnURL',
+        ).toBe('POST');
         await expect(vendorPage).toHaveURL(returnUrlPattern, { timeout: 90_000 });
 
         const paymentResultDialog = vendorPage.getByRole('dialog');
@@ -506,6 +533,7 @@ test.describe('Market Day 活動主流程', () => {
 
       await test.step('FLOW-29～31 攤主選位並確認完整報名結果', async () => {
         progress('FLOW-29～31 攤主選位');
+        await vendorPage.bringToFront();
         const stallMapPromise = waitForApi(
           vendorPage,
           `/api/vendor/stall-map/${state.applicationNo}`,
@@ -568,6 +596,7 @@ test.describe('Market Day 活動主流程', () => {
 
       await test.step('FLOW-32 主辦方確認收款結果', async () => {
         progress('FLOW-32 主辦方收款');
+        await organizerPage.bringToFront();
         const collectionPromise = waitForApi(
           organizerPage,
           `/api/organizer/payments/${state.applicationId}`,
@@ -586,6 +615,7 @@ test.describe('Market Day 活動主流程', () => {
 
       await test.step('FLOW-33 主辦方確認設備、用電與車牌', async () => {
         progress('FLOW-33 主辦方設備');
+        await organizerPage.bringToFront();
         const equipmentPromise = waitForApi(
           organizerPage,
           `/api/organizer/equipment/${state.eventId}`,
@@ -605,6 +635,7 @@ test.describe('Market Day 活動主流程', () => {
 
       await test.step('FLOW-34 主辦方從活動地圖確認攤位與品牌', async () => {
         progress('FLOW-34 主辦方攤位地圖');
+        await organizerPage.bringToFront();
         const organizerMapPromise = waitForApi(
           organizerPage,
           `/api/organizer/stall/${state.eventId}`,
@@ -626,6 +657,7 @@ test.describe('Market Day 活動主流程', () => {
 
       await test.step('FLOW-35～37 一般使用者再次查看公開活動與攤商', async () => {
         progress('FLOW-35～37 公開活動結果');
+        await publicPage.bringToFront();
         await waitUntilBrandsPublic(publicPage, state.eventId, registrationEndsAt);
         await publicPage.goto('/user/activity-list');
         await publicPage.getByPlaceholder('請輸入活動名稱或關鍵字').fill(eventName);
@@ -831,10 +863,20 @@ async function expectApiSuccess<T = Record<string, unknown>>(
   response: Response,
 ): Promise<ApiEnvelope<T>> {
   const body = (await response.json()) as ApiEnvelope<T>;
-  expect(response.ok(), `${response.request().method()} ${response.url()}`).toBe(true);
-  expect(body.statusCode).toBeGreaterThanOrEqual(200);
-  expect(body.statusCode).toBeLessThan(300);
+  const diagnostic = [
+    `${response.request().method()} ${response.url()}`,
+    body.message,
+    body.messageDetails,
+  ].filter(Boolean).join(' — ');
+  expect(response.ok(), diagnostic).toBe(true);
+  expect(body.statusCode, diagnostic).toBeGreaterThanOrEqual(200);
+  expect(body.statusCode, diagnostic).toBeLessThan(300);
   return body;
+}
+
+function expectApiHttpSuccess(response: Response): void {
+  const diagnostic = `${response.request().method()} ${response.url()} — HTTP ${response.status()}`;
+  expect(response.ok(), diagnostic).toBe(true);
 }
 
 async function closeAlert(page: Page, title: string, buttonName: string): Promise<void> {
@@ -844,7 +886,8 @@ async function closeAlert(page: Page, title: string, buttonName: string): Promis
 }
 
 async function waitUntilRegistrationOpens(page: Page, opensAt: Date): Promise<void> {
-  const remaining = opensAt.getTime() - Date.now() + 2_000;
+  // datetime-local 以分鐘儲存；跨過該分鐘後只保留極短緩衝即可。
+  const remaining = opensAt.getTime() - Date.now() + 300;
   if (remaining > 0) {
     await page.waitForTimeout(remaining);
   }
@@ -882,17 +925,156 @@ async function completeOrganizerNewebPaySetup(page: Page): Promise<void> {
   const loadPromise = waitForApi(page, '/api/organizer/newebpay/load', 'GET');
   await page.goto('/organizer/dash-board/newebpay');
   const loadBody = await expectApiSuccess<OrganizerNewebPayAccountState>(await loadPromise);
-  const account = loadBody.data ?? {};
+  let account = loadBody.data ?? {};
 
   await expect(page.getByRole('heading', { name: '藍新收款設定' })).toBeVisible();
   if (account.verificationStatus === 'VERIFIED') {
     await expect(page.getByText('藍新商店驗證已完成')).toBeVisible();
     return;
   }
-  throw new Error(
-    '此主辦方尚未完成藍新 Sandbox NT$1 驗證。'
-    + '請先於藍新收款設定頁人工完成驗證，再重新執行主流程測試。',
-  );
+
+  expect(
+    organizerNewebPayCredentials.merchantId
+      && organizerNewebPayCredentials.hashKey
+      && organizerNewebPayCredentials.hashIv,
+    '主辦方尚未完成藍新驗證；請在 .env.e2e.local 設定 '
+      + 'E2E_NEWEBPAY_MERCHANT_ID、E2E_NEWEBPAY_HASH_KEY、E2E_NEWEBPAY_HASH_IV。',
+  ).toBeTruthy();
+
+  const merchantIdInput = page.getByPlaceholder('例如：MS123456789');
+  const hashKeyInput = page.getByPlaceholder('請輸入 32 個字元');
+  const hashIvInput = page.getByPlaceholder('請輸入 16 個字元');
+
+  // 先驗證亂輸入只會觸發前端欄位錯誤，不可送出敏感資料 API。
+  await merchantIdInput.fill('INVALID');
+  await hashKeyInput.fill('wrong key');
+  await hashIvInput.fill('wrong iv');
+  let invalidSaveRequestCount = 0;
+  const countInvalidSaveRequest = (request: { url(): string; method(): string }) => {
+    if (request.url().includes('/api/organizer/newebpay/save') && request.method() === 'POST') {
+      invalidSaveRequestCount += 1;
+    }
+  };
+  page.on('request', countInvalidSaveRequest);
+  await page.getByRole('button', { name: '儲存並綁定帳號' }).click();
+  await expect(page.getByText('HashKey 必須為 32 個不含空白的字元')).toBeVisible();
+  await expect(page.getByText('HashIV 必須為 16 個不含空白的字元')).toBeVisible();
+  expect(invalidSaveRequestCount, '錯誤格式不可送出藍新商店資料 API').toBe(0);
+  page.off('request', countInvalidSaveRequest);
+
+  await merchantIdInput.fill(organizerNewebPayCredentials.merchantId);
+  await hashKeyInput.fill(organizerNewebPayCredentials.hashKey);
+  await hashIvInput.fill(organizerNewebPayCredentials.hashIv);
+  const savePromise = waitForApi(page, '/api/organizer/newebpay/save', 'POST');
+  await page.getByRole('button', { name: '儲存並綁定帳號' }).click();
+  await expectApiSuccess(await savePromise);
+  await closeAlert(page, '藍新資料已儲存', '確定');
+
+  const reloadPromise = waitForApi(page, '/api/organizer/newebpay/load', 'GET');
+  await page.reload();
+  account = (await expectApiSuccess<OrganizerNewebPayAccountState>(await reloadPromise)).data ?? {};
+  expect(account.bound).toBe(true);
+  expect(account.merchantId).toBe(organizerNewebPayCredentials.merchantId);
+  progress('FLOW-04 藍新商店資料已儲存');
+
+  let gatewayFailure: string | undefined;
+  const captureGatewayFailure = (request: { url(): string; failure(): { errorText: string } | null }) => {
+    if (/ccore\.newebpay\.com\/MPG\/mpg_gateway/.test(request.url())) {
+      gatewayFailure = request.failure()?.errorText ?? 'unknown network error';
+    }
+  };
+  page.on('requestfailed', captureGatewayFailure);
+  const verifyPromise = waitForApi(page, '/api/organizer/newebpay/verify', 'POST');
+  await page.getByRole('button', { name: '開始 NT$1 試刷驗證' }).click();
+  // The app immediately submits the returned gateway form and leaves this page.
+  // Chromium may discard the response body during that navigation, so only
+  // assert the HTTP result here; the NewebPay page assertion below verifies
+  // that the response contained a usable payment form.
+  expectApiHttpSuccess(await verifyPromise);
+  progress('FLOW-05 NT$1 驗證交易已建立，等待藍新頁面');
+  try {
+    await expect(page).toHaveURL(/ccore\.newebpay\.com/, { timeout: 30_000 });
+  } catch (error) {
+    throw new Error(
+      `藍新 Sandbox 驗證頁無法載入（${gatewayFailure ?? 'browser navigation failed'}）；`
+        + '請確認 Sandbox 商店、來源 IP 與網路環境。',
+      { cause: error },
+    );
+  } finally {
+    page.off('requestfailed', captureGatewayFailure);
+  }
+
+  // The gateway first shows a transient processing document and may replace it
+  // without completing that document's DOMContentLoaded event. Waiting for the
+  // load state therefore hangs on a document that NewebPay intentionally leaves.
+  await expect.poll(async () => {
+    try {
+      const visibleInputs = await page.locator('input:not([type="hidden"]):visible').count();
+      const bodyText = await page.locator('body').innerText({ timeout: 1_000 });
+      return visibleInputs > 0
+        || /Access Denied|permission to access|NotifyUrl|ReturnUrl|錯誤/i.test(bodyText);
+    } catch {
+      return false;
+    }
+  }, {
+    message: '藍新 Sandbox 應完成處理並顯示付款表單或明確錯誤訊息',
+    timeout: 45_000,
+    intervals: [500, 1_000, 2_000],
+  }).toBe(true);
+  progress('FLOW-05 藍新頁面已載入，自動填寫測試卡');
+  const gatewayText = await page.locator('body').innerText();
+  if (/Access Denied|permission to access/i.test(gatewayText)) {
+    throw new Error('藍新 Sandbox 的 Akamai 防護拒絕 NT$1 驗證頁，請改用允許的網路環境重跑。');
+  }
+  if (/NotifyUrl|ReturnUrl|錯誤/i.test(gatewayText)) {
+    throw new Error(`藍新 Sandbox 拒絕付款參數：${gatewayText.replace(/\s+/g, ' ').trim()}`);
+  }
+
+  await fillNewebPaySandboxCard(page, process.env['E2E_ORGANIZER_EMAIL'] ?? '');
+  const agreementCheckboxes = page.locator('input[type="checkbox"]:visible');
+  const agreementCount = await agreementCheckboxes.count();
+  expect(agreementCount, '藍新驗證頁應顯示訂單確認與服務條款勾選欄位').toBeGreaterThanOrEqual(2);
+  for (let index = 0; index < agreementCount; index += 1) {
+    await agreementCheckboxes.nth(index).check();
+  }
+
+  let gatewayDialog = 'none';
+  page.once('dialog', async (dialog) => {
+    gatewayDialog = `${dialog.type()}: ${dialog.message()}`;
+    await dialog.accept();
+  });
+  const organizerReturnRequestPromise = page.waitForRequest((request) => {
+    const url = new URL(request.url());
+    return url.pathname === '/api/newebpay/organizer-verification/return';
+  }, { timeout: 90_000 });
+  await page.getByText('確認送出', { exact: true }).click();
+  await page.waitForTimeout(2_000);
+  if (gatewayDialog.startsWith('alert:')) {
+    throw new Error(`藍新驗證資料失敗：${gatewayDialog.slice('alert:'.length).trim()}`);
+  }
+  const organizerReturnRequest = await organizerReturnRequestPromise;
+  expect(
+    organizerReturnRequest.method(),
+    '主辦方 NT$1 驗證完成後，藍新應 POST 到主辦方專用 ReturnURL',
+  ).toBe('POST');
+  await expect(page).toHaveURL(/\/organizer\/dash-board\/home/, { timeout: 90_000 });
+  await expect.poll(async () => {
+    const token = await page.evaluate(() =>
+      localStorage.getItem('MarketDayToken_organizer'));
+    if (!token) return '';
+    const response = await page.request.get(
+      `${apiBaseUrl}/api/organizer/newebpay/load`,
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
+    if (!response.ok()) return '';
+    const body = (await response.json()) as ApiEnvelope<OrganizerNewebPayAccountState>;
+    return body.data?.verificationStatus ?? '';
+  }, {
+    message: '回到主辦方首頁後，NotifyURL 應完成 NT$1 驗證狀態更新',
+    timeout: 30_000,
+    intervals: [1_000, 2_000, 3_000],
+  }).toBe('VERIFIED');
+  progress('FLOW-06 藍新商店驗證完成');
 }
 
 /**

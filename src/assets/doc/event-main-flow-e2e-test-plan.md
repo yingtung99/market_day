@@ -243,7 +243,7 @@ npm run e2e:main-flow
 - `.env.e2e.local` 已設定三種角色的測試帳密。
 - 三種測試帳號都已存在於測試資料庫且能登入；腳本會覆寫主辦方資料及攤主「我的攤位」。
 - 若執行付款與選位，測試金流或已付款測試資料已準備完成。
-- 真實 Sandbox 付款時，`run-local.cmd` 必須有測試商店 Merchant ID、HashKey、HashIV、HTTPS NotifyURL 與 ReturnURL；回呼網址必須從外網連得到目前啟動中的後端。
+- 真實 Sandbox 付款時，`.env.e2e.local` 必須有 `E2E_NEWEBPAY_MERCHANT_ID`、`E2E_NEWEBPAY_HASH_KEY`、`E2E_NEWEBPAY_HASH_IV`；後端 `run-local.cmd` 必須有 HTTPS NotifyURL 與 ReturnURL。回呼網址必須從外網連得到目前啟動中的後端。
 - 如要用本機正式 Chrome 執行，可在 `.env.e2e.local` 設定 `PW_BROWSER_CHANNEL=chrome`；未設定時使用 Playwright 內建 Chromium。
 
 ### 最近一次執行結果

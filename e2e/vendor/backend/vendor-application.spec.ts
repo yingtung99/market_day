@@ -8,6 +8,7 @@ import {
   VENDOR_APPLICATION_NO,
   VENDOR_EVENT_ID,
 } from '../vendor-flow-helpers';
+import { vendorTestData } from '../vendor-test-data';
 
 async function openApplicationForm(page: import('@playwright/test').Page): Promise<void> {
   await installVendorShellStubs(page, { needsProfile: false });
@@ -63,12 +64,12 @@ test.describe('攤主報名資料', () => {
           applicationStatus: '待審核',
           reviewStatus: 'PENDING',
           paymentStatus: 'PENDING',
-          applyDates: ['2026-08-01'],
+          applyDates: [vendorTestData.application.applyDate],
           applicationFee: 650,
           equipmentTotal: 400,
           depositAmount: 1000,
           totalAmount: 2050,
-          paymentDueAt: '2026-07-25T23:59:00',
+          paymentDueAt: vendorTestData.payment.deadlineAt,
           equipmentRentals: [],
         })),
       });
@@ -82,7 +83,7 @@ test.describe('攤主報名資料', () => {
     await expect(page.getByText(VENDOR_APPLICATION_NO, { exact: true })).toBeVisible();
     expect(requestBody).toEqual({
       eventId: VENDOR_EVENT_ID,
-      applyDates: ['2026-08-01'],
+      applyDates: [vendorTestData.application.applyDate],
       vehicleNo: 'ABC-1234',
       applicantNote: '靠近入口的位置',
       equipmentRentals: [

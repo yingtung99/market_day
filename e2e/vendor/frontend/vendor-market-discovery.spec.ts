@@ -85,6 +85,8 @@ test.describe('攤主市集瀏覽', () => {
     });
     const openItem = createMarketSearchItem(openDetail);
     const fullItem = createMarketSearchItem(fullDetail);
+    const eventStartDate = openDetail.startAt.slice(0, 10);
+    const eventEndDate = openDetail.endAt.slice(0, 10);
 
     await installVendorPublicStubs(page);
     await page.route('**/api/vendor/markets/search?*', (route) => {
@@ -103,18 +105,18 @@ test.describe('攤主市集瀏覽', () => {
     await selectDropdownOption(page, '區域', '中正區');
     const startDate = page.getByLabel('開始日期');
     const endDate = page.getByLabel('結束日期');
-    await startDate.evaluate((element) => {
+    await startDate.evaluate((element, value) => {
       const input = element as HTMLInputElement;
-      input.value = '2026-08-01';
+      input.value = value;
       input.dispatchEvent(new Event('change', { bubbles: true }));
-    });
-    await endDate.evaluate((element) => {
+    }, eventStartDate);
+    await endDate.evaluate((element, value) => {
       const input = element as HTMLInputElement;
-      input.value = '2026-08-02';
+      input.value = value;
       input.dispatchEvent(new Event('change', { bubbles: true }));
-    });
-    await expect(startDate).toHaveValue('2026-08-01');
-    await expect(endDate).toHaveValue('2026-08-02');
+    }, eventEndDate);
+    await expect(startDate).toHaveValue(eventStartDate);
+    await expect(endDate).toHaveValue(eventEndDate);
     await selectDropdownOption(page, '活動狀態', '報名中');
 
     const filteredRequestPromise = page.waitForRequest((request) => {
@@ -131,8 +133,8 @@ test.describe('攤主市集瀏覽', () => {
 
     expect(params.get('city')).toBe('臺北市');
     expect(params.get('district')).toBe('中正區');
-    expect(params.get('event_start_at')).toBe('2026-08-01');
-    expect(params.get('event_end_at')).toBe('2026-08-02');
+    expect(params.get('event_start_at')).toBe(eventStartDate);
+    expect(params.get('event_end_at')).toBe(eventEndDate);
     expect(params.get('status')).toBe('OPEN');
     expect(params.get('page')).toBe('1');
     expect(params.get('pageSize')).toBe('6');

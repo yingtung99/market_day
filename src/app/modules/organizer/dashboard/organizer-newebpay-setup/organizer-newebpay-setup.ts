@@ -150,6 +150,7 @@ export class OrganizerNewebPaySetup implements OnInit {
       }
 
       if (this.route.snapshot.queryParamMap.has('verificationStatus')) {
+        await this.waitForVerificationCallback();
         await this.organizerAccess.refresh();
         if (this.isVerified) {
           await this.alert.success(
@@ -167,6 +168,19 @@ export class OrganizerNewebPaySetup implements OnInit {
       this.loadError = '目前無法載入藍新設定，請稍後再試。';
     } finally {
       this.isLoading = false;
+    }
+  }
+
+  private async waitForVerificationCallback(): Promise<void> {
+    const returnedStatus = this.route.snapshot.queryParamMap.get('verificationStatus');
+    if (returnedStatus !== 'SUCCESS' || this.verificationStatus !== 'PENDING') return;
+
+    // NewebPay's browser ReturnURL can arrive before its server-to-server
+    // NotifyURL. Poll briefly so the page reflects the authoritative Notify
+    // result instead of leaving a successful verification looking PENDING.
+    for (let attempt = 0; attempt < 10 && this.verificationStatus === 'PENDING'; attempt += 1) {
+      await new Promise<void>((resolve) => setTimeout(resolve, 1_000));
+      await this.reloadAccount();
     }
   }
 

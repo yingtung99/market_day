@@ -258,7 +258,7 @@ export function createApplicationDetail(
       key: 'REVIEWED',
       label: '審核結果',
       value: applicationStatus === '審核未通過' ? '未通過' : '已通過',
-      createdAt: '2026-07-12T12:00:00',
+      createdAt: application.cancelledAt,
     });
   }
   if (paid) {
@@ -274,7 +274,7 @@ export function createApplicationDetail(
       key: 'BOOTH_SELECTED',
       label: '選位狀態',
       value: '已完成選位',
-      createdAt: '2026-07-21T10:00:00',
+      createdAt: payment.paidAt,
     });
   }
   if (refundRequested) {

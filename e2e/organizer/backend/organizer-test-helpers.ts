@@ -19,6 +19,7 @@ export interface E2eCredentials {
 export interface ApiEnvelope<T = Record<string, unknown>> {
   statusCode?: number;
   message?: string;
+  messageDetails?: string | null;
   data?: T;
 }
 
@@ -58,7 +59,14 @@ export async function loginAs(
   }
 
   const response = await loginWithUi(page, config, credentials.email, credentials.password);
-  await expectApiSuccess(response);
+  const body = await response.json() as ApiEnvelope;
+  if (!response.ok() || body.statusCode == null || body.statusCode < 200 || body.statusCode >= 300) {
+    throw new Error(
+      `${config.label} Real API 登入失敗：${body.message ?? `HTTP ${response.status()}`}。`
+      + `請確認 ${config.emailEnv}/${config.passwordEnv} 與後端目前連線資料庫中的`
+      + '帳號、角色、Email 驗證及啟用狀態一致。',
+    );
+  }
   await expect(page).toHaveURL(config.dashboardPath);
 }
 
@@ -94,8 +102,13 @@ export async function expectApiSuccess<T = Record<string, unknown>>(
     throw error;
   }
   if (body.statusCode != null) {
-    expect(body.statusCode, body.message || response.url()).toBeGreaterThanOrEqual(200);
-    expect(body.statusCode, body.message || response.url()).toBeLessThan(300);
+    const diagnostic = [
+      `${method} ${response.url()}`,
+      body.message,
+      body.messageDetails,
+    ].filter(Boolean).join(' — ');
+    expect(body.statusCode, diagnostic).toBeGreaterThanOrEqual(200);
+    expect(body.statusCode, diagnostic).toBeLessThan(300);
   }
   return body;
 }
