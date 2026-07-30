@@ -415,6 +415,7 @@ export class UserActivityDetail {
   private mapMarketDetail(detail: UserMarketDetailApi): MarketCardItem {
     const categories = (detail.categories ?? []).map((category) => category.name).filter(Boolean);
     const status = MarketStatus.fromApiStatus(detail.eventStatus) || MarketStatus.upcoming;
+    const address = this.formatFullAddress(detail.city, detail.district, detail.address);
 
     return {
       id: String(detail.id),
@@ -423,8 +424,8 @@ export class UserActivityDetail {
       start_date: this.toDisplayDate(detail.startDate),
       end_date: this.toDisplayDate(detail.endDate),
       description: detail.description ?? detail.summary ?? '',
-      location: [detail.city, detail.district, detail.locationName].filter(Boolean).join(' '),
-      address: detail.address ?? '',
+      location: detail.locationName?.trim() ?? '',
+      address,
       city: detail.city ?? '',
       area: detail.district ?? '',
       image: detail.coverImageUrl ?? 'assets/images/market/cards/market-card-01.png',
@@ -435,6 +436,24 @@ export class UserActivityDetail {
       organizer: detail.organizer?.organizerName ?? '',
       transportation: (detail.trafficInfos ?? []).map((item) => item.details ?? '').filter(Boolean),
     };
+  }
+
+  private formatFullAddress(
+    city: string | null | undefined,
+    district: string | null | undefined,
+    address: string | null | undefined,
+  ): string {
+    let fullAddress = address?.trim() ?? '';
+
+    if (district?.trim() && !fullAddress.includes(district.trim())) {
+      fullAddress = `${district.trim()} ${fullAddress}`.trim();
+    }
+
+    if (city?.trim() && !fullAddress.includes(city.trim())) {
+      fullAddress = `${city.trim()} ${fullAddress}`.trim();
+    }
+
+    return fullAddress;
   }
 
   private createActivityDateOptions(startDate: string, endDate: string): string[] {

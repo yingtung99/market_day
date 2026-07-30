@@ -113,9 +113,17 @@ export class VendorBoothSelection implements OnInit {
     const persistedCode = this.persistedSelections.get(
       this.normalizeDate(this.activeDay?.date ?? ''),
     )?.stallNo;
+    const visibleBoothCodes = new Set(this.currentMapStalls.keys());
+    if (selectedCode) visibleBoothCodes.add(selectedCode.toUpperCase());
+    if (persistedCode) visibleBoothCodes.add(persistedCode.toUpperCase());
+
     return {
       ...DEFAULT_MARKET_MAP_DATA,
-      booths: DEFAULT_MARKET_MAP_DATA.booths.map((booth) => {
+      booths: DEFAULT_MARKET_MAP_DATA.booths
+        .filter((booth) =>
+          booth.id === 'service-booth' || visibleBoothCodes.has(booth.code.toUpperCase()),
+        )
+        .map((booth) => {
         const apiStall = this.currentMapStalls.get(booth.code.toUpperCase());
         const size = apiStall
           ? `${apiStall.width ?? 3}m × ${apiStall.length ?? 3}m`

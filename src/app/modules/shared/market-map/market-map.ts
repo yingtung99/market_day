@@ -137,9 +137,12 @@ export class MarketMap implements OnChanges, OnInit {
   @Input() fullscreenDateOptions: string[] = [];
   @Input() fullscreenSelectedDate = '';
   @Input() fullscreenAllSelected = false;
+  @Input() organizerDateOptions: string[] = [];
+  @Input() organizerSelectedDate = '';
   @Output() boothSelected = new EventEmitter<MarketMapBooth>();
   @Output() fullscreenDateSelected = new EventEmitter<string>();
   @Output() fullscreenAction = new EventEmitter<void>();
+  @Output() organizerDateSelected = new EventEmitter<string>();
 
   selectedBooth: MarketMapBooth | null = null;
   hoveredBooth: MarketMapBooth | null = null;
@@ -152,8 +155,6 @@ export class MarketMap implements OnChanges, OnInit {
   searchText = '';
   selectedZone = 'all';
   zoom = 1;
-  readonly organizerDates = ['2026/07/18', '2026/07/19'];
-  selectedOrganizerDate = this.organizerDates[0];
   private hoverPreviewTimer: ReturnType<typeof setTimeout> | null = null;
   private previewCloseTimer: ReturnType<typeof setTimeout> | null = null;
   private fullscreenCloseTimer: ReturnType<typeof setTimeout> | null = null;
@@ -171,7 +172,18 @@ export class MarketMap implements OnChanges, OnInit {
   ];
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (!changes['mapData'] || this.mode !== 'public') {
+    if (!changes['mapData']) {
+      return;
+    }
+
+    if (this.mode === 'organizer-view') {
+      this.selectedBooth = this.mapData.booths.find((booth) => this.isOrganizerBoothSelected(booth))
+        ?? null;
+      this.hoveredBooth = null;
+      return;
+    }
+
+    if (this.mode !== 'public') {
       return;
     }
 
@@ -293,7 +305,11 @@ export class MarketMap implements OnChanges, OnInit {
 
   boothClass(booth: MarketMapBooth): string {
     const visibleStatus = this.mode === 'organizer-view'
-      ? (this.isOrganizerBoothSelected(booth) ? 'selected' : 'available')
+      ? (this.isOrganizerBoothSelected(booth)
+          ? 'selected'
+          : booth.status === 'occupied'
+            ? 'occupied'
+            : 'available')
       : booth.status;
     const classes = [`booth-${visibleStatus}`, `zone-${booth.code.charAt(0).toLowerCase()}`];
 
@@ -510,6 +526,16 @@ export class MarketMap implements OnChanges, OnInit {
 
     this.selectedBooth = null;
     this.fullscreenDateSelected.emit(date);
+    window.setTimeout(() => this.centerFullscreenMap(), 0);
+  }
+
+  selectOrganizerDate(date: string): void {
+    if (!date || date === this.organizerSelectedDate) {
+      return;
+    }
+
+    this.selectedBooth = null;
+    this.organizerDateSelected.emit(date);
     window.setTimeout(() => this.centerFullscreenMap(), 0);
   }
 

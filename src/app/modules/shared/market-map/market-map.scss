@@ -1648,6 +1648,12 @@
   display: none;
 }
 
+@media (min-width: 577px) {
+  .market-map.is-public .selected-brand-card {
+    display: none;
+  }
+}
+
 .selected-brand-title,
 .booth-code-row {
   display: flex;
@@ -1942,7 +1948,7 @@
   }
 
   .mobile-selected-brand-card {
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: space-between;
     gap: 10px;
@@ -2363,6 +2369,20 @@
     --dropdown-control-radius: 6px;
     --dropdown-control-font-size: 14px;
     --dropdown-control-font-weight: 900;
+  }
+}
+
+@media (min-width: 577px) and (max-width: 768px) {
+  .market-map.is-public .map-canvas {
+    pointer-events: auto;
+  }
+
+  .market-map.is-public .map-viewport:not(.is-fullscreen) .booth-preview-fo {
+    display: block;
+  }
+
+  .mobile-selected-brand-card {
+    display: none;
   }
 }
 

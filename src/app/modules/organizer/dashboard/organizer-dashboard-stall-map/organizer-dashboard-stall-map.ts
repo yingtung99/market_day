@@ -12,11 +12,13 @@ import { MarketMap, DEFAULT_MARKET_MAP_DATA } from '../../../shared/market-map/m
   templateUrl: './organizer-dashboard-stall-map.html',
   styleUrl: './organizer-dashboard-stall-map.scss',
 })
-/** 主辦方攤位地圖頁，將後端攤位狀態套用至目前系統使用的固定地圖版型。 */
+/** 主辦方攤位地圖：依活動日期載入當日攤位與品牌配置。 */
 export class OrganizerDashboardStallMap implements OnInit {
   eventId = 0;
   event = { name: '-', date: '-', time: '-', place: '-', total: 0, available: 0, selected: 0 };
   mapData: MarketMapData = DEFAULT_MARKET_MAP_DATA;
+  dateOptions: string[] = [];
+  selectedDate = '';
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -24,10 +26,17 @@ export class OrganizerDashboardStallMap implements OnInit {
     private readonly organizerApi: OrganizerApiService,
   ) {}
 
-  /** 從路由取得活動編號後載入該活動的攤位地圖。 */
   ngOnInit(): void {
     this.eventId = Number(this.route.snapshot.paramMap.get('id'));
-    if (this.eventId > 0) void this.loadMap();
+    if (this.eventId <= 0) return;
+
+    const applyDate = this.route.snapshot.queryParamMap.get('applyDate')?.replaceAll('/', '-');
+    void this.loadMap(applyDate || undefined);
+  }
+
+  selectDate(date: string): void {
+    if (!date || date === this.selectedDate) return;
+    void this.loadMap(date.replaceAll('/', '-'));
   }
 
   goBack(): void {
@@ -45,17 +54,33 @@ export class OrganizerDashboardStallMap implements OnInit {
     }
 
     this.router.navigate(['/organizer/dash-board/stall/detail', this.eventId], {
-      queryParams: { returnPage: this.route.snapshot.queryParamMap.get('returnPage'), returnKeyword: this.route.snapshot.queryParamMap.get('returnKeyword'), returnStatus: this.route.snapshot.queryParamMap.get('returnStatus') },
+      queryParams: {
+        returnPage: this.route.snapshot.queryParamMap.get('returnPage'),
+        returnKeyword: this.route.snapshot.queryParamMap.get('returnKeyword'),
+        returnStatus: this.route.snapshot.queryParamMap.get('returnStatus'),
+      },
     });
   }
 
-  /** 將後端攤位狀態合併到目前系統提供的固定地圖座標。 */
-  private async loadMap(): Promise<void> {
+  private async loadMap(applyDate?: string): Promise<void> {
     try {
-      const applyDate = this.route.snapshot.queryParamMap.get('applyDate')?.replaceAll('/', '-');
-      const response = await firstValueFrom(this.organizerApi.getOrganizerStallMap(this.eventId, { applyDate: applyDate || undefined }));
+      const response = await firstValueFrom(
+        this.organizerApi.getOrganizerStallMap(this.eventId, {
+          applyDate: applyDate || undefined,
+        }),
+      );
       const data = response.data;
-      const start = new Date(data.event.startAt); const end = new Date(data.event.endAt);
+      const start = new Date(data.event.startAt);
+      const end = new Date(data.event.endAt);
+
+      this.dateOptions = this.buildDateOptions(data.event.startAt, data.event.endAt);
+      this.selectedDate = this.formatDateOption(
+        data.event.currentApplyDate || applyDate || this.dateOptions[0] || '',
+      );
+      if (this.selectedDate && !this.dateOptions.includes(this.selectedDate)) {
+        this.dateOptions = [this.selectedDate, ...this.dateOptions];
+      }
+
       this.event = {
         name: data.event.eventTitle || '-',
         date: `${this.dateOnly(start)} - ${this.dateOnly(end)}`,
@@ -65,29 +90,100 @@ export class OrganizerDashboardStallMap implements OnInit {
         available: data.event.availableStallCount ?? 0,
         selected: data.event.selectedStallCount ?? 0,
       };
-      const apiStalls = new Map((data.stalls ?? []).flatMap((zone) => zone.stalls.map((stall) => [stall.stallNo, { stall, zone: zone.zoneName }] as const)));
+
+      const apiStalls = new Map((data.stalls ?? []).flatMap((zone) =>
+        zone.stalls.map((stall) => [
+          stall.stallNo.toUpperCase(),
+          { stall, zone: zone.zoneName },
+        ] as const),
+      ));
+
       this.mapData = {
         ...DEFAULT_MARKET_MAP_DATA,
         name: data.event.eventTitle,
-        booths: DEFAULT_MARKET_MAP_DATA.booths.map((booth) => {
-          const api = apiStalls.get(booth.code);
-          if (!api) return booth;
-          const vendor = api.stall.selectedVendor;
-          const selected = api.stall.status === '已選擇' || api.stall.status === '系統分配';
-          return {
-            ...booth,
-            zone: api.zone,
-            status: selected ? 'selected' as const : 'available' as const,
-            size: api.stall.length && api.stall.width ? `${api.stall.length}m × ${api.stall.width}m` : booth.size,
-            brand: vendor?.name ? { id: String(api.stall.selectedApplicationId ?? api.stall.stallId), name: vendor.name, category: vendor.category?.name || '-', summary: '', logo: '' } : undefined,
-          };
-        }),
+        booths: DEFAULT_MARKET_MAP_DATA.booths
+          .filter((booth) =>
+            booth.id === 'service-booth' || apiStalls.has(booth.code.toUpperCase()),
+          )
+          .map((booth) => {
+            const api = apiStalls.get(booth.code.toUpperCase());
+            if (!api) return booth;
+
+            const vendor = api.stall.selectedVendor;
+            const status = api.stall.status.trim().toUpperCase();
+            const selected = api.stall.selectedApplicationId != null
+              || ['SELECTED', 'OCCUPIED', 'ASSIGNED', 'SOLD'].includes(status)
+              || api.stall.status.includes('\u5df2\u9078\u64c7')
+              || api.stall.status.includes('\u7cfb\u7d71\u5206\u914d');
+            return {
+              ...booth,
+              zone: api.zone,
+              status: selected
+                ? 'selected' as const
+                : status === 'AVAILABLE' || api.stall.status.includes('\u53ef\u9078\u64c7')
+                  ? 'available' as const
+                  : 'occupied' as const,
+              size: api.stall.length && api.stall.width
+                ? `${api.stall.length}m × ${api.stall.width}m`
+                : booth.size,
+              applicationId: api.stall.selectedApplicationId ?? undefined,
+              vendorOwnerName: vendor?.ownerName || undefined,
+              selectedAt: vendor?.selectedAt || undefined,
+              brand: vendor?.name
+                ? {
+                    id: String(api.stall.selectedApplicationId ?? api.stall.stallId),
+                    name: vendor.name,
+                    category: vendor.category?.name || '-',
+                    summary: '',
+                    logo: '',
+                  }
+                : undefined,
+            };
+          }),
       };
     } catch {
-      this.mapData = DEFAULT_MARKET_MAP_DATA;
+      this.mapData = { ...DEFAULT_MARKET_MAP_DATA, booths: [] };
     }
   }
 
-  private dateOnly(value: Date): string { return Number.isNaN(value.getTime()) ? '-' : value.toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' }); }
-  private timeOnly(value: Date): string { return Number.isNaN(value.getTime()) ? '-' : value.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false }); }
+  private buildDateOptions(startAt: string, endAt: string): string[] {
+    const startDate = this.apiDateOnly(startAt);
+    const endDate = this.apiDateOnly(endAt);
+    if (!startDate || !endDate) return [];
+
+    const start = new Date(`${startDate}T00:00:00Z`);
+    const end = new Date(`${endDate}T00:00:00Z`);
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || start > end) return [];
+
+    const dates: string[] = [];
+    for (
+      const current = new Date(start);
+      current <= end;
+      current.setUTCDate(current.getUTCDate() + 1)
+    ) {
+      dates.push(this.formatDateOption(current.toISOString().slice(0, 10)));
+    }
+    return dates;
+  }
+
+  private apiDateOnly(value: string): string {
+    return value.replaceAll('/', '-').match(/^\d{4}-\d{2}-\d{2}/)?.[0] ?? '';
+  }
+
+  private formatDateOption(value: string): string {
+    const date = this.apiDateOnly(value);
+    return date ? date.replaceAll('-', '/') : '';
+  }
+
+  private dateOnly(value: Date): string {
+    return Number.isNaN(value.getTime())
+      ? '-'
+      : value.toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' });
+  }
+
+  private timeOnly(value: Date): string {
+    return Number.isNaN(value.getTime())
+      ? '-'
+      : value.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false });
+  }
 }

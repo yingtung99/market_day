@@ -190,6 +190,10 @@
     gap: 11px;
     align-items: start;
 
+    > div {
+      min-width: 0;
+    }
+
     > i {
       color: var(--primary-color);
       font-size: 1.24rem;
@@ -1033,6 +1037,13 @@
     }
 
     .countdown-info {
+      white-space: normal;
+    }
+
+    .schedule-inline {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 2px;
       white-space: normal;
     }
   }

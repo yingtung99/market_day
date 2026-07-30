@@ -31,6 +31,9 @@ export interface MarketMapBooth {
   status: MarketBoothStatus;
   size: string;
   brand?: MarketMapBrand;
+  applicationId?: number;
+  vendorOwnerName?: string;
+  selectedAt?: string;
 }
 
 export interface MarketMapFacility {

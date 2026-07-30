@@ -44,9 +44,9 @@
         <div class="organizer-map-toolbar">
           <app-dropdown
             title="活動日期"
-            [options]="organizerDates"
-            [selectedValue]="selectedOrganizerDate"
-            (optionSelected)="selectedOrganizerDate = $event"
+            [options]="organizerDateOptions"
+            [selectedValue]="organizerSelectedDate"
+            (optionSelected)="selectOrganizerDate($event)"
           ></app-dropdown>
           <div class="organizer-map-legend" aria-label="攤位狀態">
             <span><i class="organizer-swatch available"></i>可選擇攤位</span>
@@ -80,9 +80,9 @@
             <app-dropdown
               class="fullscreen-date-filter"
               title="活動日期"
-              [options]="organizerDates"
-              [selectedValue]="selectedOrganizerDate"
-              (optionSelected)="selectedOrganizerDate = $event"
+              [options]="organizerDateOptions"
+              [selectedValue]="organizerSelectedDate"
+              (optionSelected)="selectOrganizerDate($event)"
             ></app-dropdown>
           }
         </div>
@@ -310,9 +310,12 @@
               </div>
               <dl class="organizer-fullscreen-booth-meta">
                 <div><dt>區域</dt><dd>{{ booth.zone }}</dd></div>
-                <div><dt>攤位尺寸</dt><dd>3m × 3m</dd></div>
+                <div><dt>攤位尺寸</dt><dd>{{ booth.size }}</dd></div>
                 @if (isOrganizerBoothSelected(booth)) {
-                  <div class="selection-time"><dt>選位時間</dt><dd>2026/05/28 14:30</dd></div>
+                  <div class="selection-time">
+                    <dt>選位時間</dt>
+                    <dd>{{ booth.selectedAt ? (booth.selectedAt | date:'yyyy/MM/dd HH:mm') : '-' }}</dd>
+                  </div>
                 }
               </dl>
               @if (booth.brand; as brand) {
@@ -324,12 +327,15 @@
                   </div>
                   <div class="organizer-fullscreen-vendor">
                     <span>攤主姓名</span>
-                    <strong>林小森</strong>
+                    <strong>{{ booth.vendorOwnerName || '-' }}</strong>
                   </div>
                 </div>
               }
-              @if (isOrganizerBoothSelected(booth) && booth.brand) {
-                <a class="organizer-fullscreen-registration-link" routerLink="/organizer/dash-board/register/detail">
+              @if (isOrganizerBoothSelected(booth) && booth.brand && booth.applicationId) {
+                <a
+                  class="organizer-fullscreen-registration-link"
+                  [routerLink]="['/organizer/dash-board/register/detail', booth.applicationId]"
+                >
                   <i class="bi bi-eye" aria-hidden="true"></i>
                   查看報名詳情
                 </a>
@@ -486,10 +492,13 @@
           <dl class="organizer-booth-info">
             <div><dt>攤位編號</dt><dd class="organizer-booth-code">{{ booth.code }}</dd></div>
             <div><dt>區域</dt><dd>{{ booth.zone }}</dd></div>
-            <div><dt>攤位尺寸（長 × 寬）</dt><dd>3m × 3m</dd></div>
+            <div><dt>攤位尺寸（長 × 寬）</dt><dd>{{ booth.size }}</dd></div>
             <div><dt>攤位狀態</dt><dd><span class="organizer-selected-status" [class.available]="!isOrganizerBoothSelected(booth)">{{ isOrganizerBoothSelected(booth) ? '已選擇' : '可選擇' }}</span></dd></div>
             @if (isOrganizerBoothSelected(booth)) {
-              <div><dt>選位時間</dt><dd>2026/05/28 14:30</dd></div>
+              <div>
+                <dt>選位時間</dt>
+                <dd>{{ booth.selectedAt ? (booth.selectedAt | date:'yyyy/MM/dd HH:mm') : '-' }}</dd>
+              </div>
             }
           </dl>
           @if (isOrganizerBoothSelected(booth) && booth.brand; as brand) {
@@ -501,12 +510,17 @@
               <dl>
                 <div><dt>品牌名稱</dt><dd>{{ brand.name }}</dd></div>
                 <div><dt>品牌類型</dt><dd>{{ brand.category }}</dd></div>
-                <div><dt>攤主姓名</dt><dd>林小森</dd></div>
+                <div><dt>攤主姓名</dt><dd>{{ booth.vendorOwnerName || '-' }}</dd></div>
               </dl>
-              <a class="organizer-registration-link" routerLink="/organizer/dash-board/register/detail">
-                <i class="bi bi-eye" aria-hidden="true"></i>
-                查看報名詳情
-              </a>
+              @if (booth.applicationId) {
+                <a
+                  class="organizer-registration-link"
+                  [routerLink]="['/organizer/dash-board/register/detail', booth.applicationId]"
+                >
+                  <i class="bi bi-eye" aria-hidden="true"></i>
+                  查看報名詳情
+                </a>
+              }
             </div>
           } @else {
             <div class="organizer-empty-selection">

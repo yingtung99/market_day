@@ -128,8 +128,10 @@ describe('VendorBoothSelection', () => {
       .toBe('available');
     expect(component.mapData.booths.find((booth) => booth.code === 'A04')?.status)
       .toBe('occupied');
-    expect(component.mapData.booths.find((booth) => booth.code === 'B03')?.status)
-      .toBe('occupied');
+    expect(component.mapData.booths.find((booth) => booth.code === 'B03'))
+      .toBeUndefined();
+    expect(component.mapData.booths.filter((booth) => booth.id !== 'service-booth').length)
+      .toBe(3);
     expect(component.days[0].booth?.code).toBe('A12');
     expect(component.isLoading).toBeFalse();
   });

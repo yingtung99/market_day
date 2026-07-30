@@ -25,6 +25,12 @@
   </section>
 
   <section class="map-card">
-    <app-market-map mode="organizer-view" [mapData]="mapData"></app-market-map>
+    <app-market-map
+      mode="organizer-view"
+      [mapData]="mapData"
+      [organizerDateOptions]="dateOptions"
+      [organizerSelectedDate]="selectedDate"
+      (organizerDateSelected)="selectDate($event)"
+    ></app-market-map>
   </section>
 </main>

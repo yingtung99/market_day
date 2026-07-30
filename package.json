@@ -7,7 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "e2e:seed": "powershell -ExecutionPolicy Bypass -File ..\\..\\..\\sql\\run-e2e-seed.ps1",
+    "e2e:seed": "powershell -ExecutionPolicy Bypass -File .\\sql\\run-e2e-seed.ps1",
     "e2e": "playwright test --grep-invert \"@profile-reset|@sandbox-refund\" --headed --workers=1",
     "e2e:vendor": "playwright test e2e/vendor --headed --workers=1",
     "e2e:vendor:portal": "playwright test e2e/vendor/frontend --headed --workers=1",

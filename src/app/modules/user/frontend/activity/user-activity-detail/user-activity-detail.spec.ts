@@ -107,7 +107,7 @@ describe('UserActivityDetail', () => {
     expect(component.showBoothInfo).toBeTrue();
   });
 
-  it('should render only stalls returned by the public stall API', () => {
+  it('should preserve the complete map and apply stalls returned by the public stall API', () => {
     (component as any).applyDailyStallLayout('2026/07/19', [{
       stallId: 2,
       eventId: 7,
@@ -120,8 +120,10 @@ describe('UserActivityDetail', () => {
       vendorName: null,
     }]);
 
-    expect(component.selectedMarketMap.booths.map((booth) => booth.code).sort()).toEqual(['B01', '服務處']);
+    expect(component.selectedMarketMap.booths.length).toBe(51);
+    expect(component.selectedMarketMap.booths.some((booth) => booth.code === 'A01')).toBeTrue();
     expect(component.selectedMarketMap.booths.find((booth) => booth.code === 'B01')?.zone).toBe('B區');
+    expect(component.selectedMarketMap.booths.find((booth) => booth.code === 'B01')?.status).toBe('available');
   });
 
   it('should preserve an occupied booth when its brand is not public', () => {
