@@ -157,7 +157,7 @@ export class OrganizerDashboardRegistrationManagement implements OnInit {
     const row: OrganizerRegistrationRow = {
       id: item.applicationId,
       activity: item.eventTitle || '-',
-      activityImage: 'assets/images/shared/no-image-placeholder.svg',
+      activityImage: item.eventCoverImageUrl || 'assets/images/shared/no-image-placeholder.svg',
       activityTime: item.eventTime || '-',
       brandName: item.vendorName || '-',
       vendorName: item.vendorOwnerName || '-',

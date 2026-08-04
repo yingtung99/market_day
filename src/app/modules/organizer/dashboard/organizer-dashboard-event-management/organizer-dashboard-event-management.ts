@@ -457,7 +457,7 @@ export class OrganizerDashboardEventManagement implements OnInit {
       status: this.toApiStatus(this.selectedStatus),
       startDate: this.appliedStartDate,
       endDate: this.appliedEndDate,
-      sort: 'DEFAULT',
+      sort: 'UPCOMING_FIRST',
       page: this.currentPage,
       pageSize: this.pageSize,
     }).subscribe((response) => {
