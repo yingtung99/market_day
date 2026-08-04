@@ -14,6 +14,7 @@ export interface OrganizerApplicationCategory {
 export interface OrganizerApplicationSummary {
   applicationId: number;
   eventTitle: string;
+  eventCoverImageUrl: string | null;
   eventTime: string;
   vendorName: string;
   category: OrganizerApplicationCategory | null;
