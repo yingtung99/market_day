@@ -470,7 +470,8 @@ export class OrganizerDashboardRegistrationDetail implements OnInit {
     const totalAmount = raw.feedetail[4]?.amount;
     const registrationPeriods = (raw.applicationdetail.registrationPeriods || '-')
       .replace(/(?<=\d{2}:\d{2}) - (?=\d{4}[/-]\d{2}[/-]\d{2})/g, '\n');
-    const reason = raw.applicationdetail.reviewNote
+    const reason = raw.application.applicationStatus === ApplicationStatus.reviewRejected
+      && raw.applicationdetail.reviewNote
       ? {
           title: '審核未通過原因',
           subtitle: raw.applicationdetail.reviewNote,
