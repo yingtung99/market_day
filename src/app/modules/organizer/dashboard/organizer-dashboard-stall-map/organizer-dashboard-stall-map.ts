@@ -131,7 +131,7 @@ export class OrganizerDashboardStallMap implements OnInit {
               selectedAt: vendor?.selectedAt || undefined,
               brand: vendor?.name
                 ? {
-                    id: String(api.stall.selectedApplicationId ?? api.stall.stallId),
+                    id: String(vendor.brandId),
                     name: vendor.name,
                     category: vendor.category?.name || '-',
                     summary: '',

@@ -3,6 +3,7 @@ import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angul
 import { NEVER } from 'rxjs';
 
 import { OrganizerApiService } from '../../../../core/services/organizer-api.service';
+import { AlertService } from '../../../../core/services/alert.service';
 import { OrganizerDashboardRegistrationDetail } from './organizer-dashboard-registration-detail';
 
 describe('OrganizerDashboardRegistrationDetail', () => {
@@ -74,12 +75,12 @@ describe('OrganizerDashboardRegistrationDetail', () => {
   it('品牌 ID 為 0 時仍應帶入品牌詳情網址', async () => {
     component.detail.brand.id = 0;
     const openInNewTab = spyOn<any>(component, 'openInNewTab');
+    const alert = TestBed.inject(AlertService);
+    spyOn(alert, 'error').and.resolveTo();
 
     await component.handlePageAction({ key: 'viewBrand', label: '查看品牌' });
 
-    expect(openInNewTab).toHaveBeenCalledWith(
-      '/user/brand-detail',
-      { brand: '0' },
-    );
+    expect(openInNewTab).not.toHaveBeenCalled();
+    expect(alert.error).toHaveBeenCalled();
   });
 });

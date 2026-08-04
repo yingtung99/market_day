@@ -36,6 +36,7 @@ export interface OrganizerStallSearchResponse {
 }
 
 export interface OrganizerStallVendor {
+  brandId: number;
   name: string | null;
   category: { id: number; name: string; slug: string } | null;
   ownerName: string | null;

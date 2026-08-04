@@ -175,7 +175,10 @@ export class OrganizerDashboardRegistrationDetail implements OnInit {
         return this.presentStatusRecords([
           { label: '報名日期', value: times.registeredAt },
           { label: '審核時間', value: times.reviewedAt },
-          { label: '付款期限', value: this.detail.payment.deadline },
+          { label: '付款時間', value: times.paidAt },
+          { label: '退款申請時間', value: times.refundRequestedAt },
+          { label: '退款審核時間', value: times.refundReviewedAt },
+          { label: '退款完成時間', value: times.refundedAt },
           { label: '已取消時間', value: times.cancelledAt },
         ]);
       case ApplicationStatus.pendingReview:
@@ -186,7 +189,6 @@ export class OrganizerDashboardRegistrationDetail implements OnInit {
         return this.presentStatusRecords([
           { label: '報名日期', value: times.registeredAt },
           { label: '審核時間', value: times.reviewedAt },
-          { label: '付款期限', value: this.detail.payment.deadline },
         ]);
       case ApplicationStatus.pendingSelection:
         return this.presentStatusRecords([
@@ -261,9 +263,14 @@ export class OrganizerDashboardRegistrationDetail implements OnInit {
         this.router.navigate(['/organizer/dash-board/activity/detail', this.detail.activity.eventId]);
         return;
       case 'viewBrand':
+        const brandId = this.detail.brand.id;
+        if (brandId == null || !Number.isInteger(brandId) || brandId <= 0) {
+          await this.alert.error('品牌詳情載入失敗', '品牌 ID 不正確，請重新整理後再試。');
+          return;
+        }
         this.openInNewTab(
           '/user/brand-detail',
-          this.detail.brand.id != null ? { brand: String(this.detail.brand.id) } : undefined,
+          { brand: String(brandId) },
         );
         return;
       case 'viewBoothMap':

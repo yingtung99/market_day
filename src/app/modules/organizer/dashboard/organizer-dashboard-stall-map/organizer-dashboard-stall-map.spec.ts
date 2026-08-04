@@ -57,6 +57,7 @@ describe('OrganizerDashboardStallMap', () => {
                   status: 'SELECTED',
                   selectedApplicationId: 99,
                   selectedVendor: {
+                    brandId: 7,
                     name: '午後果子舖',
                     category: { id: 1, name: '餐飲美食', slug: 'food' },
                     ownerName: '陳小果',
@@ -92,6 +93,7 @@ describe('OrganizerDashboardStallMap', () => {
         vendorOwnerName: '陳小果',
         selectedAt: '2026-09-13T14:30:00',
         brand: jasmine.objectContaining({
+          id: '7',
           name: '午後果子舖',
           category: '餐飲美食',
         }),

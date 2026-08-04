@@ -77,8 +77,11 @@ export class UserBrandDetail {
 
     this.brand = stateBrand ?? null;
 
-    if (brandId) {
+    const numericBrandId = Number(brandId);
+    if (Number.isInteger(numericBrandId) && numericBrandId > 0) {
       this.loadBrandDetail(brandId);
+    } else if (brandId != null) {
+      void this.alert.error('品牌詳情載入失敗', '品牌 ID 不正確，請返回品牌列表後重新選擇。');
     }
   }
 
