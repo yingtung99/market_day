@@ -228,7 +228,11 @@
                     </a>
                   }
                 </div>
-                <a class="preview-action" routerLink="/user/brands">
+                <a
+                  class="preview-action"
+                  routerLink="/user/brand-detail"
+                  [queryParams]="{ brand: brand.id }"
+                >
                   查看品牌
                   <i class="bi bi-arrow-right" aria-hidden="true"></i>
                 </a>
@@ -253,7 +257,7 @@
                   <small>{{ brand.category }}</small>
                 </div>
               </div>
-              <a routerLink="/user/brands">
+              <a routerLink="/user/brand-detail" [queryParams]="{ brand: brand.id }">
                 查看品牌
                 <i class="bi bi-arrow-right" aria-hidden="true"></i>
               </a>
@@ -372,7 +376,11 @@
           </div>
         </div>
         <div class="mobile-selected-brand-action">
-          <a routerLink="/user/brands" aria-label="查看品牌">
+          <a
+            routerLink="/user/brand-detail"
+            [queryParams]="{ brand: brand.id }"
+            aria-label="查看品牌"
+          >
             <i class="bi bi-arrow-right" aria-hidden="true"></i>
           </a>
         </div>
@@ -423,7 +431,11 @@
                   <dd>{{ booth.size }}</dd>
                 </div>
               </dl>
-              <a class="brand-link" routerLink="/user/brands">
+              <a
+                class="brand-link"
+                routerLink="/user/brand-detail"
+                [queryParams]="{ brand: brand.id }"
+              >
                 查看品牌
                 <i class="bi bi-arrow-right" aria-hidden="true"></i>
               </a>
@@ -556,7 +568,11 @@
             </div>
           </dl>
 
-          <a class="brand-link" routerLink="/user/brands">
+          <a
+            class="brand-link"
+            routerLink="/user/brand-detail"
+            [queryParams]="{ brand: brand.id }"
+          >
             查看品牌
             <i class="bi bi-arrow-right" aria-hidden="true"></i>
           </a>

@@ -70,4 +70,16 @@ describe('OrganizerDashboardRegistrationDetail', () => {
       }),
     );
   });
+
+  it('品牌 ID 為 0 時仍應帶入品牌詳情網址', async () => {
+    component.detail.brand.id = 0;
+    const openInNewTab = spyOn<any>(component, 'openInNewTab');
+
+    await component.handlePageAction({ key: 'viewBrand', label: '查看品牌' });
+
+    expect(openInNewTab).toHaveBeenCalledWith(
+      '/user/brand-detail',
+      { brand: '0' },
+    );
+  });
 });

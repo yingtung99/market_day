@@ -263,7 +263,7 @@ export class OrganizerDashboardRegistrationDetail implements OnInit {
       case 'viewBrand':
         this.openInNewTab(
           '/user/brand-detail',
-          this.detail.brand.id ? { brand: String(this.detail.brand.id) } : undefined,
+          this.detail.brand.id != null ? { brand: String(this.detail.brand.id) } : undefined,
         );
         return;
       case 'viewBoothMap':
