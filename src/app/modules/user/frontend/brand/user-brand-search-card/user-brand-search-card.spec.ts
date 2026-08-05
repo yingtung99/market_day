@@ -36,4 +36,8 @@ describe('UserBrandSearchCard', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should display representative product names from the brand summary', () => {
+    expect(component.representativeProducts).toBe('測試商品');
+  });
 });

@@ -16,7 +16,8 @@ export class UserBrandSearchCard {
 
   /** 取前三個商品名稱作為卡片上的代表作品摘要。 */
   get representativeProducts(): string {
-    return this.brand.products.map((product) => product.name).join('、');
+    const productNames = this.brand.products.map((product) => product.name).filter(Boolean);
+    return productNames.length > 0 ? productNames.join('、') : this.brand.goodat_works;
   }
 
   /** 點擊卡片後回傳品牌資料給父層導頁。 */
