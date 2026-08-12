@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { ActivityStatus } from '../../../../models/status/ActivityStatus';
 import { ApplicationStatus } from '../../../../models/status/ApplicationStatus';
+import { formatDisplayDateText } from '../../../../core/utils/date-display.util';
 
 export interface DashboardTableColumn {
   key: string;
@@ -10,6 +11,8 @@ export interface DashboardTableColumn {
   width?: string;
   minWidth?: string;
   nowrap?: boolean;
+  /** 超出欄寬時顯示省略號，並以原生提示顯示完整內容。 */
+  truncate?: boolean;
   actionMinWidth?: string;
   valueKeys?: string[];
   valueLabels?: string[];
@@ -60,9 +63,10 @@ export class DashboardDataTable {
 
   getDisplayValue(row: Record<string, any>, key: string): unknown {
     const value = row[key];
-    return value === null || value === undefined || (typeof value === 'string' && value.trim() === '')
+    const displayValue = value === null || value === undefined || (typeof value === 'string' && value.trim() === '')
       ? '-'
       : value;
+    return formatDisplayDateText(displayValue);
   }
 
   getProgressCurrent(column: DashboardTableColumn, row: Record<string, any>): number {

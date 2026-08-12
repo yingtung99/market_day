@@ -167,7 +167,7 @@
           <tbody>
             @for (record of paginatedRegistrationRecords; track record.activityName) {
             <tr>
-              <td>{{ record.activityName }}</td>
+              <td><span class="app-table-name-truncate" [title]="record.activityName">{{ record.activityName }}</span></td>
               <td class="col-muted">
                 <div class="registration-days">
                   @for (date of record.registrationDates; track date) {

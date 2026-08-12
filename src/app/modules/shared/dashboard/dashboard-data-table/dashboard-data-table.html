@@ -48,7 +48,10 @@
                 @case ('imageText') {
                   <div class="image-text-cell">
                     <img [src]="row[column.key + 'Image']" [alt]="row[column.key]" />
-                    <span>{{ getDisplayValue(row, column.key) }}</span>
+                    <span
+                      [class.truncate]="column.truncate"
+                      [attr.title]="column.truncate ? getDisplayValue(row, column.key) : null"
+                    >{{ getDisplayValue(row, column.key) }}</span>
                   </div>
                 }
                 @case ('status') {
@@ -112,7 +115,11 @@
                   </div>
                 }
                 @default {
-                  <span [class]="row[column.key + 'TextClass'] ?? null">{{ getDisplayValue(row, column.key) }}</span>
+                  <span
+                    [class]="row[column.key + 'TextClass'] ?? null"
+                    [class.truncate]="column.truncate"
+                    [attr.title]="column.truncate ? getDisplayValue(row, column.key) : null"
+                  >{{ getDisplayValue(row, column.key) }}</span>
                 }
               }
             </td>

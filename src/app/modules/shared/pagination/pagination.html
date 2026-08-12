@@ -28,6 +28,7 @@
   </div>
 
   <p class="page-info">
-    顯示第 {{ startItemNumber() }}－{{ endItemNumber() }} 筆，共 {{ totalItems }} 筆
+    <span>顯示第 {{ startItemNumber() }}–{{ endItemNumber() }} 筆，共 {{ totalItems }} 筆</span>
+    <span class="page-current">第 {{ currentPage }} / {{ totalPages() }} 頁</span>
   </p>
 </div>

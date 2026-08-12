@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 import { AlertService } from '../../../../core/services/alert.service';
 import { OrganizerApiService } from '../../../../core/services/organizer-api.service';
+import { formatDisplayDateRange } from '../../../../core/utils/date-display.util';
 import { isApiSuccessStatus } from '../../../../models/interface/shared/ApiResult';
 import { OrganizerApplicationSummary } from '../../../../models/interface/organizer/OrganizerApplicationSearch';
 import {
@@ -42,14 +43,14 @@ export class OrganizerDashboardRegistrationManagement implements OnInit {
   readonly statusOptions = ApplicationStatus.filterList;
 
   readonly columns: DashboardTableColumn[] = [
-    { key: 'activity', label: '活動名稱', type: 'imageText' },
-    { key: 'activityTime', label: '活動日期', nowrap: true },
-    { key: 'status', label: '報名狀態', type: 'status', align: 'center' },
-    { key: 'brandName', label: '品牌名稱' },
-    { key: 'brandType', label: '品牌類型' },
-    { key: 'vendorName', label: '攤主姓名' },
-    { key: 'registeredAt', label: '報名時間' },
-    { key: 'action', label: '', type: 'action', align: 'end', minWidth: '72px' },
+    { key: 'activity', label: '活動名稱', type: 'imageText', width: '17%', truncate: true },
+    { key: 'activityTime', label: '活動日期', width: '18%', nowrap: true },
+    { key: 'status', label: '報名狀態', type: 'status', align: 'center', width: '9%', nowrap: true },
+    { key: 'brandName', label: '品牌名稱', width: '12%', nowrap: true },
+    { key: 'brandType', label: '品牌類型', width: '8%', nowrap: true },
+    { key: 'vendorName', label: '攤主姓名', width: '8%', nowrap: true },
+    { key: 'registeredAt', label: '報名時間', width: '13%', nowrap: true },
+    { key: 'action', label: '', type: 'action', align: 'end', width: '15%' },
   ];
 
   constructor(
@@ -158,7 +159,7 @@ export class OrganizerDashboardRegistrationManagement implements OnInit {
       id: item.applicationId,
       activity: item.eventTitle || '-',
       activityImage: item.eventCoverImageUrl || 'assets/images/shared/no-image-placeholder.svg',
-      activityTime: item.eventTime || '-',
+      activityTime: formatDisplayDateRange(item.eventTime),
       brandName: item.vendorName || '-',
       vendorName: item.vendorOwnerName || '-',
       brandType: item.category?.name || '-',

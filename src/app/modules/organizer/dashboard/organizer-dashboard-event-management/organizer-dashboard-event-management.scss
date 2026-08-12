@@ -48,19 +48,6 @@
       height: 32px;
     }
 
-    span {
-      min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-  }
-
-  td[data-column='location'] span {
-    display: block;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
 
   td[data-column='date'] {

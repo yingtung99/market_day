@@ -13,6 +13,7 @@ import { AdminUserLoginDto } from '../../../../models/interface/admin/AdminUserL
 import { UserStatusChangeDto } from '../../../../models/interface/admin/AdminUserAction';
 import { ApiResult, isApiSuccessStatus } from '../../../../models/interface/shared/ApiResult';
 import { DashboardPagination } from '../../../shared/dashboard/dashboard-pagination/dashboard-pagination';
+import { formatDisplayDateText } from '../../../../core/utils/date-display.util';
 
 @Component({
   selector: 'app-admin-dashboard-user-detail-vender',
@@ -128,8 +129,8 @@ export class AdminDashboardUserDetailVender implements OnInit {
           role: UserType.fromApiRole(data.role),
           accountStatus: UserStatus.fromApiStatus(data.accountStatus),
           googleLinked: data.isGoogleBound,
-          registeredAt: data.regAt,
-          lastLoginAt: data.lastLoginAt ?? '-',
+          registeredAt: formatDisplayDateText(data.regAt),
+          lastLoginAt: data.lastLoginAt ? formatDisplayDateText(data.lastLoginAt) : '-',
           registrationCount: data.ongoingEventCount,
           completedEventCount: data.endedEventCount,
         },
@@ -154,7 +155,10 @@ export class AdminDashboardUserDetailVender implements OnInit {
   }
 
   private mapRegItem(item: AdminVenderRegDto): AdminVendorDetail['detail']['activityRegistrationRecords']['items'][number] {
-    const booths = item.regBooths.map((booth) => ({ date: booth.regDate, code: booth.boothNo }));
+    const booths = item.regBooths.map((booth) => ({
+      date: formatDisplayDateText(booth.regDate),
+      code: booth.boothNo,
+    }));
     return {
       activityId: item.eventId,
       activityName: item.eventName,
@@ -167,7 +171,7 @@ export class AdminDashboardUserDetailVender implements OnInit {
 
   private mapLoginItem(item: AdminUserLoginDto): AdminVendorDetail['detail']['loginRecords']['items'][number] {
     return {
-      loginTime: item.loginTime,
+      loginTime: formatDisplayDateText(item.loginTime),
       loginMethod: item.loginMethod,
       loginStatus: item.loginStatus,
     };

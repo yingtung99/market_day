@@ -44,7 +44,7 @@ export class OrganizerDashboardStallManagement implements OnInit {
   events: StallEvent[] = [];
 
   readonly columns: DashboardTableColumn[] = [
-    { key: 'name', label: '活動名稱', type: 'imageText', width: '18%' },
+    { key: 'name', label: '活動名稱', type: 'imageText', width: '18%', truncate: true },
     { key: 'date', label: '活動日期', nowrap: true, width: '16%' },
     { key: 'location', label: '活動地點', width: '18%' },
     { key: 'status', label: '活動狀態', type: 'status', align: 'center', width: '11%' },

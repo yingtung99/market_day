@@ -22,6 +22,7 @@ import {
 import { ApplicationStatus } from '../../../../models/status/ApplicationStatus';
 import { AlertService } from '../../../../core/services/alert.service';
 import { paymentMethodLabel } from '../../../../core/utils/payment-method.util';
+import { formatDisplayDate, formatDisplayDateText } from '../../../../core/utils/date-display.util';
 import { Dropdown } from '../../../shared/dropdown/dropdown';
 import {
   DEFAULT_MARKET_MAP_DATA,
@@ -439,8 +440,10 @@ export class OrganizerDashboardRegistrationDetail implements OnInit {
   /** 將分區式 API response 整理為頁面使用的單一詳情模型。 */
   private toRegistrationDetail(raw: OrganizerApplicationDetailResponse): OrganizerRegistrationDetail {
     const categoryName = raw.brand.category?.name || '-';
-    const statusTime = (key: string): string | undefined =>
-      raw.status.find((item) => item.key === key && item.createdAt)?.createdAt ?? undefined;
+    const statusTime = (key: string): string | undefined => {
+      const value = raw.status.find((item) => item.key === key && item.createdAt)?.createdAt;
+      return value ? formatDisplayDateText(value) : undefined;
+    };
     const freeEquipmentRows = raw.equipmentRentals.freeEquipments.map((row) => ({
       cells: [
         this.textValue(row['equipmentName']),
@@ -475,8 +478,10 @@ export class OrganizerDashboardRegistrationDetail implements OnInit {
     const extraPowerFee = raw.feedetail[2]?.amount;
     const depositAmount = raw.feedetail[3]?.amount;
     const totalAmount = raw.feedetail[4]?.amount;
-    const registrationPeriods = (raw.applicationdetail.registrationPeriods || '-')
-      .replace(/(?<=\d{2}:\d{2}) - (?=\d{4}[/-]\d{2}[/-]\d{2})/g, '\n');
+    const registrationPeriods = formatDisplayDateText(
+      (raw.applicationdetail.registrationPeriods || '-')
+        .replace(/(?<=\d{2}:\d{2}) - (?=\d{4}[/-]\d{2}[/-]\d{2})/g, '\n'),
+    );
     const reason = raw.application.applicationStatus === ApplicationStatus.reviewRejected
       && raw.applicationdetail.reviewNote
       ? {
@@ -491,7 +496,9 @@ export class OrganizerDashboardRegistrationDetail implements OnInit {
           description: '退款進度與金額請至收款詳情查看。',
           requestedAt: statusTime('REFUND_REQUESTED'),
           confirmedAt: statusTime('REFUND_REVIEW'),
-          refundedAt: raw.refund.refundedAt || statusTime('REFUNDED'),
+          refundedAt: raw.refund.refundedAt
+            ? formatDisplayDateText(raw.refund.refundedAt)
+            : statusTime('REFUNDED'),
         }
       : undefined;
 
@@ -503,7 +510,7 @@ export class OrganizerDashboardRegistrationDetail implements OnInit {
         eventId: raw.event.eventId,
         name: raw.event.eventTitle || '-',
         image: raw.event.eventCoverImageUrl || 'assets/images/shared/no-image-placeholder.svg',
-        date: raw.event.eventTime || '-',
+        date: raw.event.eventTime ? formatDisplayDateText(raw.event.eventTime) : '-',
         startAt: raw.event.eventStartAt,
         endAt: raw.event.eventEndAt,
         status: raw.event.eventStatus || '-',
@@ -546,7 +553,7 @@ export class OrganizerDashboardRegistrationDetail implements OnInit {
         deadline: '-',
       },
       boothAssignments: raw.stall.map((stall) => ({
-        date: stall.applyDate,
+        date: formatDisplayDate(stall.applyDate),
         boothNo: stall.stallNo || '-',
         zone: stall.zoneName || '-',
         status: stall.selectionStatus,
@@ -569,13 +576,15 @@ export class OrganizerDashboardRegistrationDetail implements OnInit {
       times: {
         registeredAt: statusTime('APPLIED') || '-',
         reviewedAt: statusTime('REVIEW'),
-        paidAt: statusTime('PAYMENT') || raw.fee.paidAt || undefined,
+        paidAt: statusTime('PAYMENT')
+          || (raw.fee.paidAt ? formatDisplayDateText(raw.fee.paidAt) : undefined),
         selectedAt: statusTime('STALL_SELECTED'),
         finalConfirmedAt: statusTime('COMPLETED'),
         depositReturnedAt: statusTime('DEPOSIT_RETURNED'),
         refundRequestedAt: statusTime('REFUND_REQUESTED'),
         refundReviewedAt: statusTime('REFUND_REVIEW'),
-        refundedAt: statusTime('REFUNDED') || raw.refund?.refundedAt || undefined,
+        refundedAt: statusTime('REFUNDED')
+          || (raw.refund?.refundedAt ? formatDisplayDateText(raw.refund.refundedAt) : undefined),
         cancelledAt: statusTime('CANCELLED'),
       },
       reason,

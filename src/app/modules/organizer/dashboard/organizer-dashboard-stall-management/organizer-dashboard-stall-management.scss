@@ -30,20 +30,6 @@
   overflow: hidden;
 }
 
-:host ::ng-deep .stall-table td[data-column='name'] .image-text-cell span {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-:host ::ng-deep .stall-table td[data-column='location'] span {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 :host ::ng-deep .stall-status-pending { color: #6d3fa0; background: #f3e8ff; }
 :host ::ng-deep .stall-status-open { color: #2e7d45; background: #eaf8e8; }
 :host ::ng-deep .stall-status-full { color: #c76a12; background: #fff4e8; }

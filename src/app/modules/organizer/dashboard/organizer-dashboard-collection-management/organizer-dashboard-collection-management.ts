@@ -68,15 +68,15 @@ export class OrganizerDashboardCollectionManagement implements OnInit {
   ];
 
   readonly columns: DashboardTableColumn[] = [
-    { key: 'activity', label: '活動名稱', type: 'imageText', width: '16%' },
+    { key: 'activity', label: '活動名稱', type: 'imageText', width: '15%', truncate: true },
     { key: 'registrationStatus', label: '報名狀態', type: 'status', align: 'center', width: '10%' },
-    { key: 'brandName', label: '品牌名稱', width: '10%' },
-    { key: 'vendorName', label: '攤主姓名', width: '9%' },
+    { key: 'brandName', label: '品牌名稱', width: '13%', nowrap: true },
+    { key: 'vendorName', label: '攤主姓名', width: '8%', nowrap: true },
     { key: 'paymentStatus', label: '付款狀態', type: 'status', align: 'center', width: '10%' },
     { key: 'paymentAmount', label: '付款金額', align: 'end', nowrap: true, width: '8%' },
     { key: 'deposit', label: '保證金', align: 'end', nowrap: true, width: '7%' },
     { key: 'paidAt', label: '付款時間', nowrap: true, width: '13%' },
-    { key: 'action', label: '', type: 'action', align: 'end', width: '17%' },
+    { key: 'action', label: '', type: 'action', align: 'end', width: '16%' },
   ];
 
   constructor(

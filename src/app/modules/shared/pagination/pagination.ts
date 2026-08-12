@@ -25,7 +25,27 @@ export class Pagination {
 
   /** 頁碼 */
   pages(): number[] {
-    return Array.from({ length: this.totalPages() }, (_, i) => i + 1);
+    const totalPages = this.totalPages();
+    const visiblePageCount = 5;
+
+    if (totalPages <= visiblePageCount) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+
+    const currentPage = Math.min(Math.max(this.currentPage, 1), totalPages);
+    const halfWindow = Math.floor(visiblePageCount / 2);
+    let startPage = currentPage - halfWindow;
+    let endPage = startPage + visiblePageCount - 1;
+
+    if (startPage < 1) {
+      startPage = 1;
+      endPage = visiblePageCount;
+    } else if (endPage > totalPages) {
+      endPage = totalPages;
+      startPage = totalPages - visiblePageCount + 1;
+    }
+
+    return Array.from({ length: visiblePageCount }, (_, i) => startPage + i);
   }
 
   /** 目前頁第一筆編號 */

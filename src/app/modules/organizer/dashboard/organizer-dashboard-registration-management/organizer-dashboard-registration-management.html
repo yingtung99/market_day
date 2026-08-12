@@ -48,9 +48,10 @@
 
   <div class="dashboard-list-content">
     <app-dashboard-data-table
+      class="registration-table"
       [columns]="columns"
       [rows]="displayRows"
-      tableMinWidth="1180px"
+      tableMinWidth="100%"
       emptyText="目前沒有報名資料"
       [rowClickable]="true"
       (rowClick)="onTableRowClick($event)"

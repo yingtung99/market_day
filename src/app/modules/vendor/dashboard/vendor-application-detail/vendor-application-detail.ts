@@ -16,6 +16,7 @@ import { MarketStatus } from '../../../../models/status/MarketStatus';
 import { VendorStatus } from '../../../../models/status/VendorStatus';
 import type { VendorApplicationApiDetail } from '../../../../models/interface/vendor/VendorApplicationApiDetail';
 import { paymentMethodLabel } from '../../../../core/utils/payment-method.util';
+import { formatDisplayDate, formatDisplayDateText } from '../../../../core/utils/date-display.util';
 
 @Component({
   selector: 'app-vendor-application-detail',
@@ -244,13 +245,13 @@ export class VendorApplicationDetail implements OnInit {
     this.marketWorkflowLoaded = Boolean(
       api.event.workflowStatus || api.event.unpublished || api.event.unpublishRequested,
     );
-    this.eventDateText = api.event.eventTime;
+    this.eventDateText = formatDisplayDateText(api.event.eventTime);
     this.market = {
       id: String(api.event.eventId),
       title: api.event.eventTitle,
       time: '',
-      start_date: api.event.eventStartAt?.slice(0, 10) ?? '',
-      end_date: api.event.eventEndAt?.slice(0, 10) ?? '',
+      start_date: formatDisplayDate(api.event.eventStartAt, ''),
+      end_date: formatDisplayDate(api.event.eventEndAt, ''),
       description: '',
       location: api.event.locationName,
       address: api.event.address,
@@ -361,7 +362,7 @@ export class VendorApplicationDetail implements OnInit {
       subtotal: formatCurrency(item.total ?? item.subtotal),
     }));
     this.boothAssignments = selectedStalls.map((stall) => ({
-      date: stall.applyDate,
+      date: formatDisplayDate(stall.applyDate),
       number: displayValue(stall.stallNo),
       zone: displayValue(stall.zoneName),
       selectedAt: '',
@@ -408,7 +409,7 @@ export class VendorApplicationDetail implements OnInit {
         }
 
         this.boothAssignments = response.data.application.selectedStalls.map((stall) => ({
-          date: stall.applyDate,
+          date: formatDisplayDate(stall.applyDate),
           number: displayValue(stall.stallNo),
           zone: displayValue(stall.zoneName),
           selectedAt: '',
@@ -674,7 +675,9 @@ function createPaymentRows(api: VendorApplicationApiDetail): DetailRow[] {
     api.fee.providerTradeNo
       ? { label: '交易編號', value: api.fee.providerTradeNo }
       : null,
-    api.fee.paidAt ? { label: '付款時間', value: api.fee.paidAt } : null,
+    api.fee.paidAt
+      ? { label: '付款時間', value: formatDisplayDateText(api.fee.paidAt) }
+      : null,
     api.fee.paymentAmount != null
       ? { label: '付款金額', value: formatCurrency(api.fee.paymentAmount), highlight: true }
       : null,
@@ -694,7 +697,9 @@ function createRefundRows(api: VendorApplicationApiDetail): DetailRow[] {
     api.refund.refundAmount != null
       ? { label: '退款金額', value: formatCurrency(api.refund.refundAmount), highlight: true }
       : null,
-    api.refund.refundedAt ? { label: '退款時間', value: api.refund.refundedAt } : null,
+    api.refund.refundedAt
+      ? { label: '退款時間', value: formatDisplayDateText(api.refund.refundedAt) }
+      : null,
   ].filter((row): row is DetailRow => row !== null);
 }
 

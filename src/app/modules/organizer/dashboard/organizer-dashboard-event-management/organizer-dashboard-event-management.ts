@@ -56,7 +56,7 @@ export class OrganizerDashboardEventManagement implements OnInit {
 
   /** 活動管理列表欄位設定。 */
   columns: DashboardTableColumn[] = [
-    { key: 'name', label: '活動名稱', type: 'imageText', width: '14%' },
+    { key: 'name', label: '活動名稱', type: 'imageText', width: '14%', truncate: true },
     { key: 'date', label: '活動日期', nowrap: true, width: '18%' },
     { key: 'status', label: '活動狀態', type: 'status', align: 'center', width: '9%' },
     { key: 'location', label: '活動地點', width: '17%' },

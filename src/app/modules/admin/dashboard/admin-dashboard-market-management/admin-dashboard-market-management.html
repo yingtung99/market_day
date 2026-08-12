@@ -58,7 +58,7 @@
               <td class="activity-name">
                 <div class="activity-name-cell">
                   <img [src]="activity.image" [alt]="activity.name" />
-                  <span>{{ activity.name }}</span>
+                  <span class="app-table-name-truncate" [title]="activity.name">{{ activity.name }}</span>
                 </div>
               </td>
               <td class="activity-date">{{ formatDateRange(activity.startDate, activity.endDate) }}</td>

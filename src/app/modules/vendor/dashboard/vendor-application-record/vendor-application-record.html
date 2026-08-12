@@ -64,7 +64,7 @@
                     @if (item.image) {
                       <img [src]="item.image" [alt]="item.marketName" />
                     }
-                    <strong>{{ item.marketName }}</strong>
+                    <strong class="app-table-name-truncate" [title]="item.marketName">{{ item.marketName }}</strong>
                   </div>
                 </td>
 

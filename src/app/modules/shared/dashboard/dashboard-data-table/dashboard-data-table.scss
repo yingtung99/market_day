@@ -147,6 +147,8 @@
 
 .image-text-cell {
   display: flex;
+  width: 100%;
+  min-width: 0;
   align-items: center;
   gap: 10px;
   white-space: nowrap;
@@ -160,8 +162,21 @@
   }
 
   span {
+    min-width: 0;
     white-space: nowrap;
   }
+}
+
+.truncate {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.image-text-cell .truncate {
+  flex: 1 1 auto;
 }
 
 .multi-value-grid {

@@ -5,6 +5,7 @@ import { firstValueFrom, Observable } from 'rxjs';
 import { AlertService } from '../../../../core/services/alert.service';
 import { AdminApiService } from '../../../../core/services/admin-api.service';
 import { ActivityStatus } from '../../../../models/status/ActivityStatus';
+import { formatDisplayDateText } from '../../../../core/utils/date-display.util';
 import { AdminMarketDetail } from '../../../../models/interface/admin/AdminMarketDetail';
 import { AdminEventDetailDto, AdminEventStatusLog } from '../../../../models/interface/admin/AdminEventDetail';
 import { EventStatusChangeDto } from '../../../../models/interface/admin/AdminEventAction';
@@ -116,16 +117,18 @@ export class AdminDashboardMarketDetail implements OnInit {
         image: data.coverImg,
         name: data.eventName,
         types: categoryNames,
-        time: data.eventTime,
+        time: formatDisplayDateText(data.eventTime),
         locationName: data.locationName,
         location: data.addr,
         description: data.description,
       },
       timeline: {
-        registrationStartTime: data.registrationStartTime,
-        registrationEndTime: data.registrationEndTime,
-        finalListConfirmation: data.finalListCfmTime ?? '尚未確認',
-        activityTime: data.eventTime,
+        registrationStartTime: formatDisplayDateText(data.registrationStartTime),
+        registrationEndTime: formatDisplayDateText(data.registrationEndTime),
+        finalListConfirmation: data.finalListCfmTime
+          ? formatDisplayDateText(data.finalListCfmTime)
+          : '尚未確認',
+        activityTime: formatDisplayDateText(data.eventTime),
       },
       organizerInfo: {
         organizerName: data.organizerName,
@@ -158,7 +161,7 @@ export class AdminDashboardMarketDetail implements OnInit {
   /** 把 API 回傳的狀態紀錄轉成畫面用的 StatusLog */
   private mapStatusLog(log: AdminEventStatusLog): AdminMarketDetail['statusLogs'][number] {
     return {
-      dateTime: log.dateTime,
+      dateTime: formatDisplayDateText(log.dateTime),
       status: ActivityStatus.fromWorkflowApiStatus(log.status),
       description: log.description,
       operator: {

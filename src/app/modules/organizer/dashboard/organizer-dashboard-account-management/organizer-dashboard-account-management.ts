@@ -47,7 +47,7 @@ export class OrganizerDashboardAccountManagement implements OnInit {
   readonly statusOptions = ActivityStatus.filterList;
 
   readonly columns: DashboardTableColumn[] = [
-    { key: 'activity', label: '活動名稱', type: 'imageText', nowrap: true, minWidth: '178px' },
+    { key: 'activity', label: '活動名稱', type: 'imageText', nowrap: true, minWidth: '178px', truncate: true },
     { key: 'activityDate', label: '活動日期', nowrap: true, minWidth: '134px' },
     { key: 'activityStatus', label: '活動狀態', type: 'status', align: 'center', minWidth: '78px' },
     { key: 'paidBooths', label: '已付款攤位數', align: 'center', nowrap: true, minWidth: '96px' },

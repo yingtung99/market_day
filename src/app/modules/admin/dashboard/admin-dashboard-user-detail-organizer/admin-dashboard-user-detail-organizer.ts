@@ -12,6 +12,7 @@ import { AdminUserLoginDto } from '../../../../models/interface/admin/AdminUserL
 import { UserStatusChangeDto } from '../../../../models/interface/admin/AdminUserAction';
 import { ApiResult, isApiSuccessStatus } from '../../../../models/interface/shared/ApiResult';
 import { DashboardPagination } from '../../../shared/dashboard/dashboard-pagination/dashboard-pagination';
+import { formatDisplayDateText } from '../../../../core/utils/date-display.util';
 
 @Component({
   selector: 'app-admin-dashboard-user-detail-organizer',
@@ -127,8 +128,8 @@ export class AdminDashboardUserDetailOrganizer implements OnInit {
           role: UserType.fromApiRole(data.role),
           accountStatus: UserStatus.fromApiStatus(data.accountStatus),
           googleLinked: data.isGoogleBound,
-          registeredAt: data.regAt,
-          lastLoginAt: data.lastLoginAt ?? '-',
+          registeredAt: formatDisplayDateText(data.regAt),
+          lastLoginAt: data.lastLoginAt ? formatDisplayDateText(data.lastLoginAt) : '-',
           createdActivityCount: data.createdEventCount,
           ongoingActivityCount: data.ongoingEventCount,
           endedActivityCount: data.endedEventCount,
@@ -158,7 +159,7 @@ export class AdminDashboardUserDetailOrganizer implements OnInit {
     return {
       activityId: item.eventId,
       activityName: item.eventName,
-      activityTime: item.eventDate,
+      activityTime: formatDisplayDateText(item.eventDate),
       activityStatus: ActivityStatus.fromApiStatus(item.eventStatus),
       registrationCount: item.registrationCount,
     };
@@ -166,7 +167,7 @@ export class AdminDashboardUserDetailOrganizer implements OnInit {
 
   private mapLoginItem(item: AdminUserLoginDto): AdminOrganizerDetail['detail']['loginRecords']['items'][number] {
     return {
-      loginTime: item.loginTime,
+      loginTime: formatDisplayDateText(item.loginTime),
       loginMethod: item.loginMethod,
       loginStatus: item.loginStatus,
     };

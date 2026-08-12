@@ -15,6 +15,7 @@ import { DateRangeSelector } from '../../../shared/date-range-selector/date-rang
 import { Dropdown } from '../../../shared/dropdown/dropdown';
 import { ClickableTableRowDirective } from '../../../shared/dashboard/clickable-table-row/clickable-table-row.directive';
 import { DashboardPagination } from '../../../shared/dashboard/dashboard-pagination/dashboard-pagination';
+import { formatDisplayDateText } from '../../../../core/utils/date-display.util';
 
 const DETAIL_LINK = '/vendor/dash-board/application-record/detail';
 
@@ -271,7 +272,7 @@ function createApiRecord(item: VendorApplicationSummary): ApplicationRecord {
     id: item.applicationId,
     image: item.eventImageUrl ?? '',
     marketName: item.eventTitle,
-    eventDate: item.eventDate,
+    eventDate: formatDisplayDateText(item.eventDate),
     location: item.location,
     applicationNo: item.applicationNo,
     status: config.status,

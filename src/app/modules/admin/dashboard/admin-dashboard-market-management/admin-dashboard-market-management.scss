@@ -9,6 +9,7 @@
 .activity-table {
   width: 100%;
   min-width: 960px;
+  table-layout: fixed;
   border-collapse: collapse;
   color: var(--text-dark);
 
@@ -52,6 +53,7 @@
 
 .activity-name-cell {
   display: flex;
+  min-width: 0;
   align-items: center;
   gap: 10px;
 
@@ -60,6 +62,11 @@
     height: 32px;
     border-radius: var(--radius-tag);
     object-fit: cover;
+    flex: 0 0 auto;
+  }
+
+  .app-table-name-truncate {
+    flex: 1 1 auto;
   }
 }
 
