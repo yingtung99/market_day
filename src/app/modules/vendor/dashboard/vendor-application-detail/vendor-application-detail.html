@@ -76,7 +76,11 @@
   <section class="summary-card">
     <div class="card-heading summary-heading">
       <h2><i class="bi bi-calendar-event"></i>活動資訊</h2>
-      <a routerLink="/vendor/sign-up-detail" [state]="{ market: market }" class="outline-link app-btn secondary">
+      <a
+        routerLink="/user/activity-detail"
+        [queryParams]="{ id: market.id }"
+        class="outline-link app-btn secondary"
+      >
         <i class="bi bi-eye"></i>查看活動
       </a>
     </div>

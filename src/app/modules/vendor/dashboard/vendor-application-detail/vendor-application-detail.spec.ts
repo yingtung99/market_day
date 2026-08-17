@@ -138,6 +138,14 @@ describe('VendorApplicationDetail', () => {
     expect(textContent).toContain('桌子');
   });
 
+  it('should link to the published activity detail by event id', () => {
+    const activityLink = fixture.nativeElement.querySelector(
+      '.summary-heading .outline-link',
+    ) as HTMLAnchorElement;
+
+    expect(activityLink.getAttribute('href')).toBe('/user/activity-detail?id=8');
+  });
+
   it('should map API stall and status-flow data', () => {
     expect(component.boothAssignments).toEqual([
       {

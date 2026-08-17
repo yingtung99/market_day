@@ -3,11 +3,10 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { VendorDashboardService } from '../../../../core/Vendor/dashboardApi/vendor-dashboard.service';
-import { VendorService } from '../../../../core/Vendor/vendorApi/vendor.service';
 import { AlertService } from '../../../../core/services/alert.service';
 import { isApiSuccessStatus } from '../../../../models/interface/shared/ApiResult';
 import type { MarketMapBooth, MarketMapData } from '../../../../models/interface/shared/MarketMap';
-import type { VendorMarketDetail } from '../../../../models/interface/vendor/VendorMarketDetail';
+import type { VendorApplicationApiDetail } from '../../../../models/interface/vendor/VendorApplicationApiDetail';
 import type {
   VendorSelectedStall,
   VendorStallMap,
@@ -63,7 +62,6 @@ export class VendorBoothSelection implements OnInit {
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly vendorDashboardService: VendorDashboardService,
-    private readonly vendorService: VendorService,
     private readonly alert: AlertService,
   ) {
     this.applicationNo = this.route.snapshot.paramMap.get('applicationNo') ?? 'MD20260601001';
@@ -98,7 +96,7 @@ export class VendorBoothSelection implements OnInit {
           response.data.applicationdetail?.registrationPeriods,
         );
 
-        this.loadActivity(response.data.event.eventId);
+        this.initializeActivity(response.data);
       },
       error: () => this.handleActivityLoadFailure(),
     });
@@ -236,24 +234,13 @@ export class VendorBoothSelection implements OnInit {
     this.router.navigate(['/vendor/dash-board/application-record/detail', this.applicationId]);
   }
 
-  private loadActivity(eventId: number): void {
-    this.vendorService.getMarketDetail(eventId).subscribe({
-      next: (response) => {
-        if (!isApiSuccessStatus(response.statusCode) || !response.data) {
-          this.handleActivityLoadFailure(response.message);
-          return;
-        }
-
-        this.applyActivity(response.data);
-      },
-      error: () => this.handleActivityLoadFailure(),
-    });
-  }
-
-  private applyActivity(activity: VendorMarketDetail): void {
-    this.activityTitle = activity.eventTitle;
-    this.activityAddress = activity.locationName || activity.address;
-    this.boothTotal = activity.dailyAvailability[0]?.totalStalls ?? activity.maxBooths;
+  /**
+   * 報名截止後，攤主仍須能查看自己的活動與互動式攤位圖。
+   * 因此直接使用報名詳情的活動資料初始化，不再呼叫僅開放報名期間可查詢的活動 API。
+   */
+  private initializeActivity(application: VendorApplicationApiDetail): void {
+    this.activityTitle = application.event.eventTitle;
+    this.activityAddress = application.event.locationName || application.event.address;
 
     const viewDates = this.route.snapshot.queryParamMap.get('dates')?.split(',').filter(Boolean) ?? [];
     const selectedTimes = this.route.snapshot.queryParamMap.get('selectedAt')?.split(',') ?? [];
@@ -264,7 +251,7 @@ export class VendorBoothSelection implements OnInit {
 
     const activityDates = this.applicationDates.length > 0
       ? this.applicationDates
-      : this.uniqueDates(activity.dailyAvailability.map((item) => item.applyDate));
+      : this.uniqueDates(application.stall.map((item) => item.applyDate));
     this.activityDateText = this.registrationPeriodText
       || this.formatApplicationDates(activityDates);
     this.days.splice(0, this.days.length, ...activityDates.map((date) => {
