@@ -86,13 +86,17 @@
     }
 
     &.log-details {
-      overflow-wrap: anywhere;
+      overflow: hidden;
+      overflow-wrap: normal;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     &.log-target {
-      white-space: normal;
-      overflow-wrap: break-word;
-      word-break: break-word;
+      overflow: hidden;
+      overflow-wrap: normal;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     &.log-targetRole {

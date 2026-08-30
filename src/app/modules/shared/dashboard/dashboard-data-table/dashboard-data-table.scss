@@ -351,3 +351,15 @@
     font-weight: 500;
   }
 }
+
+@media (max-width: 767px) {
+  .dashboard-table-wrap {
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .dashboard-table {
+    min-width: var(--mobile-table-min-width, 960px) !important;
+  }
+}

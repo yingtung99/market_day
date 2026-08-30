@@ -45,6 +45,7 @@ export class DashboardDataTable {
   @Input() columns: DashboardTableColumn[] = [];
   @Input() rows: Record<string, any>[] = [];
   @Input() tableMinWidth = '960px';
+  @Input() mobileTableMinWidth = '960px';
   @Input() minimumRows = 0;
   @Input() emptyText = '目前沒有資料';
   @Input() emptyHint = '';

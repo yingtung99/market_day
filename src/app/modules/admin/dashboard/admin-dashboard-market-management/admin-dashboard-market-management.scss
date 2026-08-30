@@ -119,3 +119,9 @@
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 767px) {
+  .activity-table {
+    min-width: 1200px;
+  }
+}

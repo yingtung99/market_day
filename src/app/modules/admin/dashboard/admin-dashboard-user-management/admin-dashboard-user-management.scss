@@ -118,3 +118,9 @@
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 767px) {
+  .user-table {
+    min-width: 1100px;
+  }
+}

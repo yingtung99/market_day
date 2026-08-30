@@ -1,5 +1,9 @@
 <div class="dashboard-table-wrap">
-  <table class="dashboard-table" [style.min-width]="tableMinWidth">
+  <table
+    class="dashboard-table"
+    [style.min-width]="tableMinWidth"
+    [style.--mobile-table-min-width]="mobileTableMinWidth"
+  >
     <thead>
       <tr>
         @for (column of columns; track column.key) {

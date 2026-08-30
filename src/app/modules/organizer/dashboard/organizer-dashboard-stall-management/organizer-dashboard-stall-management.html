@@ -9,7 +9,7 @@
   </section>
 
   <div class="dashboard-list-content">
-    <app-dashboard-data-table class="stall-table" [columns]="columns" [rows]="displayRows" tableMinWidth="100%" emptyText="目前沒有符合條件的活動" [rowClickable]="true" (rowClick)="onTableRowClick($event)" (actionClick)="onTableAction($event)"></app-dashboard-data-table>
+    <app-dashboard-data-table class="stall-table" [columns]="columns" [rows]="displayRows" tableMinWidth="100%" mobileTableMinWidth="1120px" emptyText="目前沒有符合條件的活動" [rowClickable]="true" (rowClick)="onTableRowClick($event)" (actionClick)="onTableAction($event)"></app-dashboard-data-table>
   </div>
   <app-dashboard-pagination class="dashboard-list-pagination" [currentPage]="currentPage" [pageSize]="pageSize" [totalItems]="totalItems" (pageChange)="onPageChange($event)"></app-dashboard-pagination>
 </section>
